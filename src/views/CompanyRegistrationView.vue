@@ -15,16 +15,25 @@
               <!-- 0 -->
               <div v-if="this.page == 0" class="row">
                 <div class="col-md-4">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/3/3a/M%C3%BCnster%2C_LVM%2C_B%C3%BCrogeb%C3%A4ude_--_2013_--_5149-51.jpg"
-                    alt=""
-                  />
+
+                  <div class="image">
+                    <div v-if="form.image == null" class="no-image">
+                      <i class="fa-solid fa-image fa-2xl"></i>
+                    </div>
+                    <img
+                      v-else
+                      src=""
+                      alt="Unternehmen Bild"
+                      id="companyImage"
+                    />
+                  </div>
 
                   <input
                     class="form-control form-control-sm col-7"
                     type="file"
                     id="formFile"
                     accept="image/*"
+                    @change="imageInput()"
                   />
                 </div>
 
@@ -523,6 +532,7 @@ export default {
       employees: [''],
       products: [],
       abo: '',
+      image: null
     });
 
     const product = reactive({
@@ -541,6 +551,26 @@ export default {
     };
   },
   methods: {
+    imageInput() {
+      var input = document.getElementById('formFile');
+
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        var $ = (window.jQuery = require('jquery'));
+        var image = '';
+        reader.onload = function (e) {
+          $('#companyImage').attr('src', e.target.result);
+          image = e.target.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+        this.form.image = image;
+
+        console.log(this.form.image);
+      }
+
+    },
     addEmployee() {
       var mailInputs = document.getElementsByClassName('signup-mail');
 
@@ -660,7 +690,11 @@ export default {
           this.form.description = descriptionInput.value;
           this.form.category = categoryInput.value;
 
-          console.log(this.form);
+          var input = document.getElementById('formFile');
+
+          if (input.files && input.files[0]) {
+            this.form.image = input.files[0]
+          }
 
           this.continuePressed = false;
           this.page++;
@@ -881,5 +915,35 @@ img {
 .fa-location-dot {
   position: relative;
   left: 3px;
+}
+
+.image {
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%;
+  margin-bottom: 10px;
+}
+
+.no-image {
+  background-color: gray;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.375rem;
+}
+
+img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+.fa-image {
+  position: absolute;
+  font-size: 6rem;
+  top: 50%;
+  left: calc(50% - 3rem);
 }
 </style>
