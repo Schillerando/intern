@@ -1,0 +1,757 @@
+<template>
+  <div>
+    <AlertPopup :title="this.alertTitle" :info="this.alertInfo" />
+
+    <div class="container">
+      <div class="row">
+
+        <div class="col-lg-4">
+          <div class="card m-1">
+            <div class="card-header">Mitarbeiter</div>
+            <div class="card-body">
+              <div
+                v-for="(employee, index) in this.employees"
+                :key="employee"
+              >
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa fa-envelope"></i
+                  ></span>
+                  <input
+                    type="email"
+                    class="form-control employees-mail"
+                    placeholder="Email"
+                    data-regex="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                    :value="employees[index]"
+                    :disabled="!isEmployeesEditing"
+                    required
+                    @input="validateEmployeesChange(false, index)"
+                  />
+                  <button
+                    v-if="isEmployeesEditing"
+                    class="input-group-text"
+                    @click="employees.splice(index, 1)"
+                  >
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+    
+              <div v-if="userData.user_metadata.isCompanyLeader">
+                <div
+                  v-if="!isEmployeesEditing"
+                  class="py-2"
+                  style="width: fit-content"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-primary px-2 mx-2"
+                    @click="editEmployees()"
+                  >
+                    Bearbeiten
+                  </button>
+                </div>
+                <div v-else>
+                  <button
+                    type="button"
+                    v-if="this.employees.length < 6"
+                    @click="addEmployee()"
+                    class="btn btn-primary my-4"
+                    style="width: max-content; display: block"
+                  >
+                    Mitarbeiter hinzufügen
+                  </button>
+                  <div style="display: flex">
+                    <div class="py-2 mx-0 edit-buttons">
+                      <button
+                        type="button"
+                        class="btn btn-primary px-2 mx-2"
+                        @click="validateEmployeesChange(true, 0)"
+                      >
+                        <div class="loading-button">Speichern</div>
+                        <div class="spinner">
+                          <span
+                            class="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                          ></span>
+                          <span class="sr-only">Loading...</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="py-2 mx-0 edit-buttons">
+                      <button
+                        type="button"
+                        class="btn btn-warning px-2 mx-2"
+                        @click="cancelEmployeesChange()"
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-8">
+          <div class="card m-1">
+            <div class="card-header">Informationen</div>
+            <div class="card-body">
+              <form class="needs-validation" novalidate>
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-shop"></i
+                  ></span>
+                  <input
+                    type="text"
+                    id="company-name"
+                    class="form-control"
+                    placeholder="Name"
+                    @input="validateCompanyChange(false)"
+                    :value="companyData.name"
+                    :disabled="!isCompanyEditing"
+                    required
+                  />
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-location-dot"></i
+                  ></span>
+                  <input
+                    type="text"
+                    id="company-location"
+                    class="form-control"
+                    placeholder="Raum, Pausenhof, ..."
+                    @input="validateCompanyChange(false)"
+                    :value="companyData.location"
+                    :disabled="!isCompanyEditing"
+                    required
+                  />
+                </div>
+    
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-list"></i
+                  ></span>
+                  <select
+                    class="form-select"
+                    id="company-category"
+                    aria-label="Default select example"
+                    :value="companyData.categories[0]"
+                    @change="validateCompanyChange(false)"
+                    :disabled="!isCompanyEditing"
+                    required
+                  >
+                    <option selected>Kategorie</option>
+                    <option value="Gastronomie">Gastronomie</option>
+                    <option value="Kultur">Kultur</option>
+                    <option value="Dienstleistung">
+                      Dienstleistung
+                    </option>
+                    <option value="Gastronomie & Dienstleistung">
+                      Gastronomie & Dienstleistung
+                    </option>
+                  </select>
+                </div>
+    
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-circle-info"></i
+                  ></span>
+                  <textarea
+                    type="text"
+                    id="company-info"
+                    class="form-control"
+                    placeholder="Beschreibung"
+                    required
+                    maxlength="400"
+                    style="resize: none"
+                    rows="5"
+                    cols="50"
+                    @input="validateCompanyChange(false)"
+                    :value="companyData.info"
+                    :disabled="!isCompanyEditing"
+                  ></textarea>
+                </div>
+              </form>
+    
+              <div
+                v-if="!isCompanyEditing"
+                class="py-2"
+                style="width: fit-content"
+              >
+                <button
+                  type="button"
+                  class="btn btn-primary px-2 mx-2"
+                  @click="editCompany()"
+                >
+                  Bearbeiten
+                </button>
+              </div>
+              <div v-else style="display: flex">
+                <div class="py-2 mx-0 edit-buttons">
+                  <button
+                    type="button"
+                    class="btn btn-primary px-2 mx-2"
+                    @click="validateCompanyChange(true)"
+                  >
+                    <div class="loading-button">Speichern</div>
+                    <div class="spinner">
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </button>
+                </div>
+                <div class="py-2 mx-0 edit-buttons">
+                  <button
+                    type="button"
+                    class="btn btn-warning px-2 mx-2"
+                    @click="cancelCompanyChange()"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { supabase } from '../supabase';
+import { reactive } from 'vue';
+import { useStore, mapGetters } from 'vuex';
+import { computed } from 'vue';
+import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
+import AlertPopup from '../components/AlertPopup.vue';
+
+export default {
+  name: 'SettingsView',
+  components: {
+    AlertPopup,
+  },
+  data() {
+    return {
+      isCompanyEditing: false,
+      isEmployeesEditing: false,
+      saveCompanyPressed: false,
+      saveEmployeesPressed: false,
+      employees: [],
+      alertTitle: '',
+      alertInfo: '',
+      successAlertTitle: 'Erfolgreich',
+      successAlertInfo: 'Aktion wurde erfolgreich durchgeführt',
+      failureAlertTitle: 'Fehler',
+      failureAlertInfo: 'Es ist ein Fehler aufgetreten!',
+    };
+  },
+  computed: {
+    ...mapGetters(['getState']),
+  },
+  setup() {
+    const store = useStore();
+
+    const userData = computed(() => store.state.user);
+    const companyData = computed(() => store.state.userCompany);
+
+    const form = reactive({
+      name: '',
+      location: '',
+      category: 'Kategorie',
+      description: '',
+      employees: [''],
+      abo: '',
+    });
+
+    return {
+      store,
+      userData,
+      companyData,
+      form,
+    };
+  },
+  watch: {
+    companyData: function () {
+      const employees = this.companyData.employees;
+      employees.forEach((employee, index) => {
+        this.employees[index] = employee;
+      });
+    },
+    getState(newValue) {
+      var spinners = document.getElementsByClassName('spinner');
+      var loadingButtons = document.getElementsByClassName('loading-button');
+
+      if (newValue == 'loading') {
+        Array.from(spinners).forEach((spinner) => {
+          spinner.style.visibility = 'visible';
+          spinner.style.position = 'relative';
+        });
+
+        Array.from(loadingButtons).forEach((button) => {
+          button.style.visibility = 'hidden';
+          button.style.position = 'absolute';
+        });
+      } else if (newValue == 'success') {
+        Array.from(spinners).forEach((spinner) => {
+          spinner.style.visibility = 'hidden';
+          spinner.style.position = 'absolute';
+        });
+
+        Array.from(loadingButtons).forEach((button) => {
+          button.style.visibility = 'visible';
+          button.style.position = 'relative';
+        });
+
+        this.alertTitle = this.successAlertTitle;
+        this.alertInfo = this.successAlertInfo;
+
+        if (this.alertTitle == '') return;
+        alertModal = new Modal(document.getElementById('alertModal'), {});
+        alertModal.show();
+      } else {
+        Array.from(spinners).forEach((spinner) => {
+          spinner.style.visibility = 'hidden';
+          spinner.style.position = 'absolute';
+        });
+
+        Array.from(loadingButtons).forEach((button) => {
+          button.style.visibility = 'visible';
+          button.style.position = 'relative';
+        });
+
+        this.alertTitle = this.failureAlertTitle;
+        this.alertInfo = this.failureAlertInfo;
+
+        if (this.alertTitle == '') return;
+        var alertModal = new Modal(document.getElementById('alertModal'), {});
+        alertModal.show();
+      }
+    },
+  },
+  async created() {
+    this.employees = this.companyData.employees;
+  },
+  methods: {
+    addEmployee() {
+      var emailInputs = document.getElementsByClassName('employees-mail');
+      var index = 0;
+      Array.from(emailInputs).forEach((input) => {
+        this.employees[index] = input.value;
+        input.classList.remove('is-valid');
+        input.classList.remove('is-invalid');
+        index++;
+      });
+
+      this.employees.push('');
+    },
+    cancelChanges() {
+      this.cancelCompanyChange();
+    },
+    editCompany() {
+      this.isCompanyEditing = true;
+
+      var nameInput = document.getElementById('company-name');
+      var locationInput = document.getElementById('company-location');
+      var categoryInput = document.getElementById('company-category');
+      var descriptionInput = document.getElementById('company-info');
+      nameInput.disabled = false;
+      locationInput.disabled = false;
+      categoryInput.disabled = false;
+      descriptionInput.disabled = false;
+    },
+    editEmployees() {
+      this.isEmployeesEditing = true;
+
+      var emailInputs = document.getElementsByClassName('employees-mail');
+      Array.from(emailInputs).forEach((input) => {
+        input.disabled = false;
+      });
+    },
+    async validateCompanyChange(pressed) {
+      if (!pressed && !this.saveCompanyPressed) return;
+
+      var nameInput = document.getElementById('company-name');
+      var locationInput = document.getElementById('company-location');
+      var categoryInput = document.getElementById('company-category');
+      var descriptionInput = document.getElementById('company-info');
+
+      if (pressed) nameInput.value = nameInput.value.trim();
+      if (pressed) locationInput.value = locationInput.value.trim();
+      if (pressed) descriptionInput.value = descriptionInput.value.trim();
+      var valid = true;
+
+      if (nameInput.value.trim().length < 3) {
+        nameInput.classList.remove('is-valid');
+        nameInput.classList.add('is-invalid');
+        valid = false;
+      } else {
+        nameInput.classList.remove('is-invalid');
+        nameInput.classList.add('is-valid');
+      }
+
+      if (
+        locationInput.value.trim().length < 3 ||
+        locationInput.value.trim().length > 40
+      ) {
+        locationInput.classList.remove('is-valid');
+        locationInput.classList.add('is-invalid');
+        valid = false;
+      } else {
+        locationInput.classList.remove('is-invalid');
+        locationInput.classList.add('is-valid');
+      }
+
+      if (categoryInput.value == 'Kategorie') {
+        categoryInput.classList.remove('is-valid');
+        categoryInput.classList.add('is-invalid');
+        valid = false;
+      } else {
+        categoryInput.classList.remove('is-invalid');
+        categoryInput.classList.add('is-valid');
+      }
+
+      if (descriptionInput.value.trim().length < 10) {
+        descriptionInput.classList.remove('is-valid');
+        descriptionInput.classList.add('is-invalid');
+        valid = false;
+      } else {
+        descriptionInput.classList.remove('is-invalid');
+        descriptionInput.classList.add('is-valid');
+      }
+
+      this.saveCompanyPressed = true;
+
+      if (valid && pressed) {
+        this.store.commit('setState', 'loading');
+
+        if (
+          nameInput.value.replace(/\s/g, '').toLowerCase() !=
+          this.companyData.id
+        ) {
+          const { data, error } = await supabase
+            .from('companies')
+            .select()
+            .eq('id', nameInput.value.replace(/\s/g, '').toLowerCase());
+
+          if (error || data[0] != null) {
+            nameInput.classList.remove('is-valid');
+            nameInput.classList.add('is-invalid');
+
+            this.form.name = nameInput.value;
+            this.form.location = locationInput.value;
+            this.form.category = categoryInput.value;
+            this.form.description = descriptionInput.value;
+
+            this.failureAlertTitle = 'Name schon vergeben';
+            this.failureAlertInfo =
+              'Es gibt bereits ein Unternehmen mit diesem Namen. Bitte wähle einen anderen!';
+            this.store.commit('setState', 'failure');
+
+            return;
+          }
+        }
+
+        this.form.name = nameInput.value;
+        this.form.location = locationInput.value;
+        this.form.description = descriptionInput.value;
+        this.form.category = categoryInput.value;
+
+        this.saveCompany();
+      }
+    },
+    validateEmployeesChange(pressed, index) {
+      if (!pressed && !this.saveEmployeesPressed) return;
+
+      var emailInputs = document.getElementsByClassName('employees-mail');
+      var regex = emailInputs[index].getAttribute('data-regex');
+      var valid = true;
+
+      if (!pressed) {
+        if (!emailInputs[index].value.match(regex)) {
+          emailInputs[index].classList.remove('is-valid');
+          emailInputs[index].classList.add('is-invalid');
+          valid = false;
+        } else {
+          emailInputs[index].classList.remove('is-invalid');
+          emailInputs[index].classList.add('is-valid');
+        }
+      } else {
+        Array.from(emailInputs).forEach((input) => {
+          if (!input.value.match(regex)) {
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+            valid = false;
+          } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+          }
+        });
+      }
+
+      this.saveEmployeesPressed = true;
+
+      if (valid && pressed) this.saveEmployees();
+    },
+    async saveCompany() {
+      try {
+        this.isCompanyEditing = false;
+        this.saveCompanyPressed = false;
+
+        var nameInput = document.getElementById('company-name');
+        var locationInput = document.getElementById('company-location');
+        var categoryInput = document.getElementById('company-category');
+        var descriptionInput = document.getElementById('company-info');
+
+        const { data, error } = await supabase
+          .from('companies')
+          .update({
+            id: this.form.name.replace(/\s/g, '').toLowerCase(),
+            name: this.form.name,
+            categories: [this.form.category],
+            location: this.form.location,
+            info: this.form.description,
+          })
+          .eq('id', this.companyData.id)
+          .select();
+
+        if (error) throw error;
+
+        this.store.commit('setUserCompany', data[0]);
+
+        this.successAlertTitle = '';
+        this.store.commit('setState', 'success');
+
+        nameInput.classList.remove('is-valid');
+        nameInput.classList.remove('is-invalid');
+        locationInput.classList.remove('is-valid');
+        locationInput.classList.remove('is-invalid');
+        categoryInput.classList.remove('is-valid');
+        categoryInput.classList.remove('is-invalid');
+        descriptionInput.classList.remove('is-valid');
+        descriptionInput.classList.remove('is-invalid');
+      } catch (error) {
+        this.failureAlertTitle = 'Fehler';
+        this.failureAlertInfo =
+          'Beim Ändern der Unternehmens-Daten ist ein Fehler aufgetreten!';
+        this.store.commit('setState', 'failure');
+        this.cancelCompanyChange();
+        console.log(error.error_description || error.message);
+      }
+    },
+    async saveEmployees() {
+      try {
+        const employees = [];
+
+        var emailInputs = document.getElementsByClassName('employees-mail');
+        Array.from(emailInputs).forEach((input) => {
+          if (input.value != '') employees.push(input.value);
+          input.classList.remove('is-valid');
+          input.classList.remove('is-invalid');
+        });
+
+        if (
+          JSON.stringify(employees) !=
+          JSON.stringify(this.companyData.employees)
+        ) {
+          const { error } = await supabase
+            .from('companies')
+            .update({ employees: employees })
+            .eq('user_uid', this.userData.id);
+
+          if (error) throw error;
+        }
+
+        this.isEmployeesEditing = false;
+        this.saveEmployeesPressed = false;
+
+        Array.from(emailInputs).forEach((input) => {
+          input.classList.remove('is-valid');
+          input.classList.remove('is-invalid');
+        });
+      } catch (error) {
+        this.failureAlertTitle = 'Fehler';
+        this.failureAlertInfo =
+          'Beim Ändern der Mitarbeiter ist ein Fehler aufgetreten!';
+        this.store.commit('setState', 'failure');
+        this.cancelEmployeesChange();
+        console.log(error.error_description || error.message);
+      }
+    },
+    cancelCompanyChange() {
+      this.isCompanyEditing = false;
+      this.saveCompanyPressed = false;
+
+      var nameInput = document.getElementById('company-name');
+      var locationInput = document.getElementById('company-location');
+      var categoryInput = document.getElementById('company-category');
+      var descriptionInput = document.getElementById('company-info');
+
+      nameInput.value = this.companyData.name;
+      locationInput.value = this.companyData.location;
+      categoryInput.value = this.companyData.categories[0];
+      descriptionInput.value = this.companyData.info;
+
+      nameInput.classList.remove('is-valid');
+      nameInput.classList.remove('is-invalid');
+      locationInput.classList.remove('is-valid');
+      locationInput.classList.remove('is-invalid');
+      categoryInput.classList.remove('is-valid');
+      categoryInput.classList.remove('is-invalid');
+      descriptionInput.classList.remove('is-valid');
+      descriptionInput.classList.remove('is-invalid');
+    },
+    cancelEmployeesChange() {
+      this.isEmployeesEditing = false;
+      this.saveEmployeesPressed = false;
+
+      this.employees = this.companyData.employees.filter(
+        (employee) => employee != ''
+      );
+
+      console.log(this.employees);
+
+      var emailInputs = document.getElementsByClassName('employees-mail');
+      var index = 0;
+      Array.from(emailInputs).forEach((input) => {
+        input.value = this.employees[index];
+        input.classList.remove('is-valid');
+        input.classList.remove('is-invalid');
+        index++;
+      });
+    },
+  },
+};
+</script>
+
+<style scoped>
+.form-switch {
+  width: fit-content;
+  position: relative;
+  margin: 0 auto;
+}
+
+.container {
+  position: relative;
+  text-align: center;
+  width: 96%;
+  padding: 0;
+  margin: 50px auto;
+  font-size: 1.1rem;
+}
+
+.card {
+  margin: 10px 0;
+}
+
+.row {
+  margin: 0;
+  padding: 0;
+}
+
+.d-flex {
+  flex-direction: row;
+}
+
+.credit {
+  margin: auto 0;
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.credit-number {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.data {
+  text-align: left;
+  font-weight: 300;
+}
+
+.action {
+  background-color: #00a100;
+  color: white;
+}
+
+.register {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.order .card div {
+  margin: 5px 10px;
+}
+
+.product-count {
+  width: 40px;
+}
+
+.product-count i {
+  margin-left: 2px;
+}
+
+.price {
+  width: 70px;
+}
+
+.input-group-text {
+  width: 40px;
+  padding: 0;
+  padding-left: 10px;
+}
+
+.fa-location-dot {
+  position: relative;
+  left: 3px;
+}
+
+.fa-envelope {
+  position: relative;
+  left: 1px;
+}
+.fa-user {
+  position: relative;
+  left: 3px;
+}
+
+.fa-trash {
+  position: relative;
+  left: 1px;
+  color: red;
+}
+
+.spinner {
+  visibility: hidden;
+  position: absolute;
+}
+
+.edit-buttons {
+  display: inline;
+  float: left;
+  width: fit-content;
+}
+
+.pay-setup:hover {
+  transform: scale(1.02);
+}
+
+.pay-setup:active {
+  transform: scale(0.98);
+}
+
+.pay-setup {
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+</style>
