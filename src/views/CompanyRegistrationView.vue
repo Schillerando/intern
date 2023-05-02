@@ -22,7 +22,7 @@
                     </div>
                     <img
                       v-else
-                      src=""
+                      :src="this.form.image"
                       alt="Unternehmen Bild"
                       id="companyImage"
                     />
@@ -557,17 +557,14 @@ export default {
       if (input.files && input.files[0]) {
         var reader = new FileReader();
 
-        var $ = (window.jQuery = require('jquery'));
-        var image = '';
-        reader.onload = function (e) {
-          $('#companyImage').attr('src', e.target.result);
-          image = e.target.result;
+        reader.onload = e => {
+          this.form.image = e.target.result
+          console.log(this.form.image);
+
+          console.log(this.form.image.substring(this.form.image.indexOf(':'), this.form.image.indexOf(';')).split('/')[1])
         };
 
         reader.readAsDataURL(input.files[0]);
-        this.form.image = image;
-
-        console.log(this.form.image);
       }
 
     },
@@ -689,12 +686,6 @@ export default {
           this.form.location = locationInput.value;
           this.form.description = descriptionInput.value;
           this.form.category = categoryInput.value;
-
-          var input = document.getElementById('formFile');
-
-          if (input.files && input.files[0]) {
-            this.form.image = input.files[0]
-          }
 
           this.continuePressed = false;
           this.page++;

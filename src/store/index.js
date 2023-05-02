@@ -218,8 +218,28 @@ const store = createStore({
       try {
         commit('setState', 'loading');
 
+        const id = form.name.replace(/\s/g, '').toLowerCase()
+
+        var fileName = id + '.' + form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).split('/')[1]
+
+        var imagePath;
+
+        {
+          const { data, error } = await supabase
+            .storage
+            .from('sellers-headings')
+            .upload(fileName, form.image, {
+              cacheControl: '3600',
+              upsert: true
+            })
+
+          if (error) throw error;
+
+          imagePath = data.path
+        }
+
         const { error } = await supabase.from('companies').insert({
-          id: form.name.replace(/\s/g, '').toLowerCase(),
+          id: id,
           name: form.name,
           categories: [form.category],
           location: form.location,
@@ -227,14 +247,18 @@ const store = createStore({
           user_uid: this.getters.getUser.id,
           employees: form.employees,
           abo: form.abo,
+          header_picture: imagePath
         });
 
-        const { data, error3 } = await supabase.auth.updateUser({
-          data: { isCompanyLeader: true },
-        });
-        commit('setUser', data.user);
+        {
+          const { data, error } = await supabase.auth.updateUser({
+            data: { isCompanyLeader: true },
+          });
 
-        if (error3) throw error3;
+          if (error) throw error;
+          commit('setUser', data.user);
+        }
+
         if (error) throw error;
 
         const productIDs = [];
@@ -271,6 +295,8 @@ const store = createStore({
         commit('setState', 'success');
 
         this.dispatch('startUserCompanySubscription');
+
+        await router.replace('/');
       } catch (error) {
         commit('setState', 'failure');
         console.log(error.error_description || error.message);

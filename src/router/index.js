@@ -72,6 +72,7 @@ router.beforeEach((to, from, next) => {
   if (user == null && userCompany == null && to.name != 'AuthView') 
     next({ path: 'auth', query: { redirect: to.fullPath } });
   else if (userCompany == null) next({ path: 'companyRegistration' });
+  //company Registration verhindern wenn company schon vorhanden
   else next();
 });
 
