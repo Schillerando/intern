@@ -220,7 +220,8 @@ const store = createStore({
 
         const id = form.name.replace(/\s/g, '').toLowerCase()
 
-        var fileName = id + '.' + form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).split('/')[1]
+        var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
+        var fileName = id + '.' + type.split('/')[1]
 
         var imagePath;
 
@@ -230,7 +231,8 @@ const store = createStore({
             .from('sellers-headings')
             .upload(fileName, form.image, {
               cacheControl: '3600',
-              upsert: true
+              upsert: true,
+              contentType: type
             })
 
           if (error) throw error;
