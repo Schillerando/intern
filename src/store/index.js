@@ -39,6 +39,7 @@ const store = createStore({
       if (error || data.session == null) {
         console.log('no session');
         commit('setUser', null);
+        commit('setUserCompany', null);
       } else {
         console.log(data.user);
         commit('setUser', data.user);

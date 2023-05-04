@@ -6,6 +6,7 @@ import SettingsView from '../views/SettingsView';
 import AuthView from '../views/AuthView';
 import CompanyRegistrationView from '../views/CompanyRegistrationView';
 import UpdatePasswordView from '../views/UpdatePasswordView';
+import AccountingView from '../views/AccountingView';
 import store from '../store/index';
 
 const routes = [
@@ -23,6 +24,11 @@ const routes = [
     path: '/services',
     name: 'ServiceView',
     component: ServiceView,
+  },
+  {
+    path: '/buchhaltung',
+    name: 'AccountingView',
+    component: AccountingView,
   },
   {
     path: '/einstellungen',
@@ -69,7 +75,8 @@ router.beforeEach((to, from, next) => {
   const user = store.getters.getUser;
   const userCompany = store.getters.getUserCompany;
 
-  if (user == null && userCompany == null && to.name != 'AuthView') 
+  if(user == null && to.name == 'AuthView') next();
+  else if (user == null && userCompany == null && to.name != 'AuthView') 
     next({ path: 'auth', query: { redirect: to.fullPath } });
   else if (userCompany == null) next({ path: 'companyRegistration' });
   //company Registration verhindern wenn company schon vorhanden

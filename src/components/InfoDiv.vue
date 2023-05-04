@@ -15,13 +15,12 @@ export default {
 
 <style scoped>
 div {
-  color: #00a100;
   background-color: white;
-  padding: 50px 20px;
+  padding: 50px 40px;
 }
 
 p {
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 @media (max-device-width: 480px) {
