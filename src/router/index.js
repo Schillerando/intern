@@ -93,7 +93,7 @@ router.beforeEach((to, from, next) => {
   const user = store.getters.getUser;
   const userCompany = store.getters.getUserCompany;
 
-  if(user == null && to.name == 'AuthView') next();
+  if(user == null && (to.name == 'AuthView' || to.name == 'AGBView' | to.name == 'HomeView')) next();
   else if (user == null && userCompany == null && to.name != 'AuthView') 
     next({ path: 'auth', query: { redirect: to.fullPath } });
   else if (userCompany == null) next({ path: 'companyRegistration' });
