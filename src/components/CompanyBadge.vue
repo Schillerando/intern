@@ -1,18 +1,6 @@
 <template>
-  <a
-    v-if="verified || premium"
-    tabindex="0"
-    role="button"
-    data-bs-toggle="popover"
-    data-bs-trigger="focus"
-    data-bs-placement="left"
-    :data-bs-content="[
-      premium
-        ? 'Schillerando Premium-Partner'
-        : 'Verifizierter Schillerando-Partner',
-    ]"
-  >
-    <div class="container_row">
+  <div class="wrapper" v-if="verified || premium">
+    <div  class="container_row">
       <i
         class="layer1 fa-solid fa-certificate fa-xl"
         :style="{ color: [premium ? '#f6b600' : '#3798f0'] }"
@@ -20,7 +8,8 @@
       <i v-if="premium" class="layer2 fa-solid fa-crown fa-xs"></i>
       <i v-else class="layer2 fa-solid fa-check fa-sm"></i>
     </div>
-  </a>
+  </div>  
+  
 </template>
 
 <script>
@@ -41,6 +30,10 @@ export default {
 </script>
 
 <style scoped>
+.wrapper {
+  display: inline-block;
+}
+
 .container_row {
   display: grid;
   height: 25px;

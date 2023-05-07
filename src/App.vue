@@ -3,12 +3,14 @@
     <NavBar />
     <router-view></router-view>
     <SocialsFooter v-if="$route.meta.footer == null" />
+    <LockedOverlay v-if="$route.meta.locked != null" />
   </div>
 </template>
 
 <script>
 import NavBar from './components/NavBar';
 import SocialsFooter from './components/SocialsFooter';
+import LockedOverlay from './components/LockedOverlay';
 import { useStore } from 'vuex';
 
 export default {
@@ -16,12 +18,19 @@ export default {
   components: {
     NavBar,
     SocialsFooter,
+    LockedOverlay
+  },
+  setup() {
+    const store = useStore();
+
+    return {
+      store
+    }
   },
   mounted() {
     console.log('reload');
 
-    const store = useStore();
-    store.dispatch('reload');
+    this.store.dispatch('reload');
   },
 };
 </script>
@@ -30,7 +39,6 @@ export default {
 html,
 body {
   max-width: 100%;
-  overflow-x: clip;
 }
 
 body {

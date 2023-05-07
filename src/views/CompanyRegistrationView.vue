@@ -35,7 +35,11 @@
                     accept="image/*"
                     @change="imageInput()"
                   />
+
+                  <p style="font-weight: 300; font-size: 0.9rem">Füge ein Bild hinzu, welches dein Unternehmen repräsentiert. (Optimales Format 16:9)</p>
+
                 </div>
+
 
                 <div class="col-md-8">
                   <form class="needs-validation" novalidate>
@@ -222,6 +226,32 @@
                   <div class="col-lg-4">
                     <div
                       class="card mb-4 rounded-3 shadow-sm"
+                      :class="{ selected: form.abo == 'Standard' }"
+                      @click="chooseAbo('Standard')"
+                    >
+                      <div class="card-header py-3">
+                        <h4 class="info-title my-0 fw-normal">Standard</h4>
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-unstyled mt-3 mb-4">
+                          <li class="info-text">
+                            <CompanyBadge :verified="true" style="zoom: 80%; margin-right: 5px"/> Schillerando Partner
+                          </li>
+                          <li class="info-text"  style="font-weight: 700;">Kostenlose Buchhaltung</li>
+
+                          <li class="info-text">Gebührenpflichtige Lieferungen<sup>1</sup></li>
+                          <li class="info-text">Gebührenpflichtige Services</li>
+                          <li class="info-text">-</li>
+                        </ul>
+                      </div>
+                      <div class="card-footer">
+                        <h4 class="mt-2">50$ (5€)<sup>2</sup></h4>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-4">
+                    <div
+                      class="card mb-4 rounded-3 shadow-sm"
                       :class="{ selected: form.abo == 'Delivery' }"
                       @click="chooseAbo('Delivery')"
                     >
@@ -231,83 +261,63 @@
                       <div class="card-body">
                         <ul class="list-unstyled mt-3 mb-4">
                           <li class="info-text">
-                            Offizieller Schillerando Partner
+                            <CompanyBadge :verified="true" style="zoom: 80%; margin-right: 5px"/> Schillerando Partner
                           </li>
-                          <li class="info-text">Blauer Haken</li>
-                          <li class="info-text">Eigener QR-Code</li>
-                          <li class="info-text">
-                            Lieferungen mit 10% Kosten pro Lieferung
-                          </li>
+                          <li class="info-text">Kostenlose Buchhaltung</li>
+                          <li class="info-text"  style="font-weight: 700;">Kostenlose Lieferungen</li>
+                          <li class="info-text">Gebührenpflichtige Services</li>
+                          <li class="info-text">-</li>
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h3 class="mt-2">50$ (5€)</h3>
+                        <h4 class="mt-2">100$ (10€)<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>
                   <div class="col-lg-4">
                     <div
                       class="card mb-4 rounded-3 shadow-sm"
-                      :class="{ selected: form.abo == 'Delivery+' }"
-                      @click="chooseAbo('Delivery+')"
+                      :class="{ selected: form.abo == 'Business' }"
+                      @click="chooseAbo('Business')"
                     >
                       <div class="card-header py-3">
-                        <h4 class="info-title my-0 fw-normal">Delivery+</h4>
+                        <h4 class="info-title my-0 fw-normal">Business</h4>
                       </div>
                       <div class="card-body">
                         <ul class="list-unstyled mt-3 mb-4">
+                          <li class="info-text">
+                            <CompanyBadge :verified="true" :premium="true" style="zoom: 80%; margin-right: 5px"/> Premium Partner
+                          </li>
+                          <li class="info-text">Kostenlose Buchhaltung</li>
+
                           <li class="info-text">Kostenlose Lieferungen</li>
-                          <li class="info-text">
-                            Kostenlose Services, wie Müllentsorgung etc
+                          <li class="info-text"  style="font-weight: 700;">
+                            Kostenlose Services
                           </li>
-                          <li class="info-text">Lieferung von Waren</li>
+                          <li class="info-text" style="font-weight: 700;">Bevorzugung</li>
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h3 class="mt-2">150$ (15€)</h3>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-4">
-                    <div
-                      class="card mb-4 rounded-3 shadow-sm"
-                      :class="{ selected: form.abo == 'Premium' }"
-                      @click="chooseAbo('Premium')"
-                    >
-                      <div class="card-header py-3">
-                        <h4 class="info-title my-0 fw-normal">Premium</h4>
-                      </div>
-                      <div class="card-body">
-                        <ul class="list-unstyled mt-3 mb-4">
-                          <li class="info-text">
-                            Schillerando Premium Partner
-                          </li>
-                          <li class="info-text">Bevorzugung auf Website</li>
-                          <li class="info-text">Werbung</li>
-                          <li class="info-text">
-                            kostenlose Lieferung von Waren
-                          </li>
-                        </ul>
-                      </div>
-                      <div class="card-footer">
-                        <h3 class="mt-2">250$ (25€)</h3>
+                        <h4 class="mt-2">200$ (20€)<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>
 
-                  <div class="col-12">
+                  <div class="col-12" style="margin-bottom: 40px;">
                     <div
                       class="card mb-3 rounded-3 shadow-sm"
                       style="text-align: center"
-                      :class="{ selected: form.abo == 'Free' }"
-                      @click="chooseAbo('Free')"
+                      :class="{ selected: form.abo == '' }"
+                      @click="chooseAbo('')"
                     >
                       <div class="card-body">
-                        ODER: Kostenlose Registrierung ohne Lieferungen (kann
-                        später upgegradet werden)
+                        Später auswählen
                       </div>
                     </div>
                   </div>
+
+                  <p class="note"><sup>1</sup> 10% Lieferkosten pro Bestellung für Unternehmen. Beispiel: Kunde bestellt Cola für 20$ (2€). Schillerando Mitarbeiter geht zu Unternehmen und kauft Cola für 18$ (1.8€). Schillerando Mitarbeiter liefert Cola zum Kunden und bekommt 20$ (2€). Schillerando erhält 2$ (20cent) Lieferkosten.</p>
+                  <p class="note"><sup>2</sup> $ entspricht der Staatswährung (1$ = 0.01€). Das Geld muss am ersten Tag von SAS bei Schillerando abgegeben werden bzw. wird von einem Schillerando Mitarbeiter eingesammelt.</p>
 
                   <div
                     class="alert alert-danger"
@@ -316,6 +326,7 @@
                   >
                     Bitte wähle ein Abo aus!
                   </div>
+
                 </div>
               </div>
 
@@ -342,81 +353,83 @@
                 </div>
               </div>
 
-              <div style="height: 50px"></div>
-
-              <div class="back" v-if="this.page > 0">
-                <button
-                  type="button"
-                  @click="this.page--"
-                  class="btn btn-secondary"
-                >
-                  <div class="loading-button">Zurück</div>
-                  <div class="spinner">
-                    <span
-                      class="spinner-border spinner-border-sm"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="sr-only">Loading...</span>
-                  </div>
-                </button>
-              </div>
-
-              <div class="skip" v-if="this.page == 1 || this.page == 2">
-                <button
-                  type="button"
-                  @click="skipPage()"
-                  class="btn btn-secondary"
-                >
-                  <div class="loading-button">Später</div>
-                  <div class="spinner">
-                    <span
-                      class="spinner-border spinner-border-sm"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="sr-only">Loading...</span>
-                  </div>
-                </button>
-              </div>
-
-              <div class="continue" v-if="this.page != 4">
-                <button
-                  type="button"
-                  @click="validatePage(page, true)"
-                  class="btn btn-primary"
-                >
-                  <div class="loading-button">Weiter</div>
-                  <div class="spinner">
-                    <span
-                      class="spinner-border spinner-border-sm"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="sr-only">Loading...</span>
-                  </div>
-                </button>
-              </div>
-
-              <div class="continue" v-if="this.page == 4">
-                <button
-                  type="button"
-                  @click="validatePage(page, true)"
-                  class="btn btn-primary"
-                >
-                  <div class="loading-button">Registrieren</div>
-                  <div class="spinner">
-                    <span
-                      class="spinner-border spinner-border-sm"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="sr-only">Loading...</span>
-                  </div>
-                </button>
+              <div style="margin-top: 50px">
+                <div class="back" v-if="this.page > 0">
+                  <button
+                    type="button"
+                    @click="this.page--"
+                    class="btn btn-secondary"
+                  >
+                    <div class="loading-button">Zurück</div>
+                    <div class="spinner">
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </button>
+                </div>
+  
+                <div class="skip" v-if="this.page == 1 || this.page == 2">
+                  <button
+                    type="button"
+                    @click="skipPage()"
+                    class="btn btn-secondary"
+                  >
+                    <div class="loading-button">Später</div>
+                    <div class="spinner">
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </button>
+                </div>
+  
+                <div class="continue" v-if="this.page != 4">
+                  <button
+                    type="button"
+                    @click="validatePage(page, true)"
+                    class="btn btn-primary"
+                  >
+                    <div class="loading-button">Weiter</div>
+                    <div class="spinner">
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </button>
+                </div>
+  
+                <div class="continue" v-if="this.page == 4">
+                  <button
+                    type="button"
+                    @click="validatePage(page, true)"
+                    class="btn btn-primary"
+                  >
+                    <div class="loading-button">Registrieren</div>
+                    <div class="spinner">
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
+              
 
           <div class="progress-container">
             <div class="progress" style="height: 20px">
@@ -439,6 +452,7 @@
 import { reactive } from 'vue';
 import { useStore, mapGetters } from 'vuex';
 import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
+import CompanyBadge from '../components/CompanyBadge'
 import AlertPopup from '../components/AlertPopup.vue';
 import { supabase } from '@/supabase';
 
@@ -446,6 +460,7 @@ export default {
   name: 'CompanyRegistrationView',
   components: {
     AlertPopup,
+    CompanyBadge
   },
   data() {
     return {
@@ -531,7 +546,7 @@ export default {
       description: '',
       employees: [''],
       products: [],
-      abo: '',
+      abo: null,
       image: null
     });
 
@@ -559,9 +574,6 @@ export default {
 
         reader.onload = e => {
           this.form.image = e.target.result
-          console.log(this.form.image);
-
-          console.log(this.form.image.substring(this.form.image.indexOf(':'), this.form.image.indexOf(';')).split('/')[1])
         };
 
         reader.readAsDataURL(input.files[0]);
@@ -601,13 +613,22 @@ export default {
       this.page++;
     },
     async validatePage(page, pressed) {
-      if (!pressed && !this.continuePressed) return;
-
       if (page == 0) {
         var nameInput = document.getElementById('signup-name');
         var locationInput = document.getElementById('signup-location');
         var categoryInput = document.getElementById('signup-category');
         var descriptionInput = document.getElementById('signup-info');
+
+        this.form.name = nameInput.value;
+        this.form.location = locationInput.value;
+        this.form.description = descriptionInput.value;
+        this.form.category = categoryInput.value;
+      }
+
+      if (!pressed && !this.continuePressed) return;
+
+      if (page == 0) {
+        
 
         if (pressed) nameInput.value = nameInput.value.trim();
         if (pressed) locationInput.value = locationInput.value.trim();
@@ -671,10 +692,7 @@ export default {
             nameInput.classList.remove('is-valid');
             nameInput.classList.add('is-invalid');
 
-            this.form.name = nameInput.value;
-            this.form.location = locationInput.value;
-            this.form.description = descriptionInput.value;
-            this.form.category = categoryInput.value;
+
 
             return;
           }
@@ -728,7 +746,7 @@ export default {
         const invalidAbo = document.getElementById('alert-danger');
         valid = false;
 
-        if (this.form.abo == '') {
+        if (this.form.abo == null) {
           invalidAbo.style.visibility = 'visible';
           invalidAbo.style.position = 'relative';
         } else {
@@ -810,10 +828,21 @@ export default {
   margin: 0 auto;
 }
 
+h3 {
+  font-weight: 500;
+}
+
 @media (max-width: 576px) {
   .container-card {
     text-align: center;
   }
+}
+
+.note {
+  padding: 0 50px 10px 50px;
+  text-align: center;
+  font-size: 0.8rem; 
+  color: rgb(17, 17, 17);
 }
 
 .continue {
@@ -868,7 +897,7 @@ img {
 }
 
 #formFile {
-  margin-bottom: 50px;
+  margin-bottom: 10px;
 }
 
 .abo .card {
@@ -936,5 +965,9 @@ img {
   font-size: 6rem;
   top: 50%;
   left: calc(50% - 3rem);
+}
+
+.card-footer {
+  background-color: white;
 }
 </style>

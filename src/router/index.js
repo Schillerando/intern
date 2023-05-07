@@ -19,21 +19,33 @@ const routes = [
     path: '/produkte',
     name: 'ProductView',
     component: ProductView,
+    meta: {
+      locked: true,
+    },
   },
   {
     path: '/services',
     name: 'ServiceView',
     component: ServiceView,
+    meta: {
+      locked: true,
+    },
   },
   {
     path: '/buchhaltung',
     name: 'AccountingView',
     component: AccountingView,
+    meta: {
+      locked: true,
+    },
   },
   {
     path: '/einstellungen',
     name: 'SettingsView',
     component: SettingsView,
+    meta: {
+      locked: true,
+    },
   },
   {
     path: '/auth',
