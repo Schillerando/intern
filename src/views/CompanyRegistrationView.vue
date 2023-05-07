@@ -335,9 +335,11 @@
                 <h4>Bedingungen</h4>
 
                 <div
-                  class="card mb-4"
+                  class="card mb-4 p-4"
                   style="overflow-y: scroll; height: 400px"
-                ></div>
+                >
+                <AGB />
+              </div>
 
                 <div class="form-check mb-4">
                   <input
@@ -454,17 +456,19 @@ import { useStore, mapGetters } from 'vuex';
 import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
 import CompanyBadge from '../components/CompanyBadge'
 import AlertPopup from '../components/AlertPopup.vue';
+import AGB from '../components/AGB.vue';
 import { supabase } from '@/supabase';
 
 export default {
   name: 'CompanyRegistrationView',
   components: {
     AlertPopup,
-    CompanyBadge
+    CompanyBadge,
+    AGB
   },
   data() {
     return {
-      page: 0,
+      page: 4,
       continuePressed: false,
       action: '',
       alertTitle: '',

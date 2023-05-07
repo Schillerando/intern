@@ -7,6 +7,7 @@ import AuthView from '../views/AuthView';
 import CompanyRegistrationView from '../views/CompanyRegistrationView';
 import UpdatePasswordView from '../views/UpdatePasswordView';
 import AccountingView from '../views/AccountingView';
+import AGBView from '../views/AGBView';
 import store from '../store/index';
 
 const routes = [
@@ -70,6 +71,11 @@ const routes = [
     meta: {
       footer: false,
     },
+  },
+  {
+    path: '/agb',
+    name: 'AGBView',
+    component: AGBView,
   }
 ];
 
