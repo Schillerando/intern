@@ -307,8 +307,8 @@
                     <div
                       class="card mb-3 rounded-3 shadow-sm"
                       style="text-align: center"
-                      :class="{ selected: form.abo == '' }"
-                      @click="chooseAbo('')"
+                      :class="{ selected: form.abo == null }"
+                      @click="chooseAbo(null)"
                     >
                       <div class="card-body">
                         Später auswählen
