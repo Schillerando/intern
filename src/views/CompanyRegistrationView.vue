@@ -355,7 +355,7 @@
                 </div>
               </div>
 
-              <div style="margin-top: 50px">
+              <div style="height: 80px">
                 <div class="back" v-if="this.page > 0">
                   <button
                     type="button"
@@ -468,7 +468,7 @@ export default {
   },
   data() {
     return {
-      page: 4,
+      page: 0,
       continuePressed: false,
       action: '',
       alertTitle: '',
@@ -821,7 +821,6 @@ export default {
 .container-card {
   position: relative;
   width: 95%;
-  height: 95%;
   margin: 2.5% auto;
   text-align: left;
 }

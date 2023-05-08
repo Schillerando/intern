@@ -62,7 +62,7 @@ const store = createStore({
 
         commit('setState', 'success');
 
-        if (path == null) await router.replace('/account');
+        if (path == null) await router.replace('/einstellungen');
         else await router.replace(path);
       } catch (error) {
         commit('setState', 'failure');
@@ -299,7 +299,26 @@ const store = createStore({
 
         this.dispatch('startUserCompanySubscription');
 
-        await router.replace('/');
+        await router.replace('/einstellungen');
+      } catch (error) {
+        commit('setState', 'failure');
+        console.log(error.error_description || error.message);
+      }
+    },
+    async updateAbo({ commit }, form) {
+      try {
+        commit('setState', 'loading');
+
+        const { error } = await supabase.from('companies').update({
+          abo: form.abo
+        })
+        .eq('id', this.getters.getUserCompany.id);
+
+        if (error) throw error;
+
+        commit('setState', 'success');
+
+        router.back();
       } catch (error) {
         commit('setState', 'failure');
         console.log(error.error_description || error.message);

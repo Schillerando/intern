@@ -8,6 +8,7 @@ import CompanyRegistrationView from '../views/CompanyRegistrationView';
 import UpdatePasswordView from '../views/UpdatePasswordView';
 import AccountingView from '../views/AccountingView';
 import AGBView from '../views/AGBView';
+import UpdateAboView from '../views/UpdateAboView';
 import store from '../store/index';
 
 const routes = [
@@ -22,6 +23,7 @@ const routes = [
     component: ProductView,
     meta: {
       locked: true,
+      company: true
     },
   },
   {
@@ -30,6 +32,7 @@ const routes = [
     component: ServiceView,
     meta: {
       locked: true,
+      company: true
     },
   },
   {
@@ -38,6 +41,7 @@ const routes = [
     component: AccountingView,
     meta: {
       locked: true,
+      company: true
     },
   },
   {
@@ -46,6 +50,8 @@ const routes = [
     component: SettingsView,
     meta: {
       locked: true,
+      company: true,
+      noAccess: true,
     },
   },
   {
@@ -54,6 +60,7 @@ const routes = [
     component: AuthView,
     meta: {
       footer: false,
+      auth: false
     },
   },
   {
@@ -62,6 +69,8 @@ const routes = [
     component: CompanyRegistrationView,
     meta: {
       footer: false,
+      company: false,
+      auth: true
     },
   },
   {
@@ -76,6 +85,15 @@ const routes = [
     path: '/agb',
     name: 'AGBView',
     component: AGBView,
+  },
+  {
+    path: '/updateAbo',
+    name: 'UpdateAboView',
+    component: UpdateAboView,
+    meta: {
+      footer: false,
+      company: true
+    },
   }
 ];
 
@@ -93,11 +111,16 @@ router.beforeEach((to, from, next) => {
   const user = store.getters.getUser;
   const userCompany = store.getters.getUserCompany;
 
-  if(user == null && (to.name == 'AuthView' || to.name == 'AGBView' | to.name == 'HomeView')) next();
-  else if (user == null && userCompany == null && to.name != 'AuthView') 
-    next({ path: 'auth', query: { redirect: to.fullPath } });
-  else if (userCompany == null) next({ path: 'companyRegistration' });
-  //company Registration verhindern wenn company schon vorhanden
+  console.log(user)
+  console.log(userCompany)
+  console.log(to.meta.auth)
+  console.log(to.meta.company)
+
+  if((to.meta.auth || to.meta.company) && user == null) next({ path: 'auth', query: { redirect: to.fullPath } });
+  else if(to.meta.company && userCompany == null) next({ path: 'companyRegistration', query: { redirect: to.fullPath } });
+  else if(to.meta.company == false && userCompany != null) next({ path: from.path })
+  else if(to.meta.auth == false && user != null) next({ path: from.path })
+  else if(to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
   else next();
 });
 

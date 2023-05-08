@@ -1,9 +1,8 @@
 <template>
-  <div v-if="store.getters.getUserCompany.abo == '' || store.getters.getUserCompany.abo == null" class="overlay">
+  <div v-if="store.getters.getUser.id != store.getters.getUserCompany.user_uid && store.getters.getUserCompany.abo != '' && store.getters.getUserCompany.abo != null" class="overlay">
     <div class="centered">
       <img class="lock" src="@/assets/lock.png" alt="">
-      <button v-if="store.getters.getUser.id == store.getters.getUserCompany.user_uid" class="btn btn-primary" @click="router.push('updateAbo')" >Abo auswählen</button>
-      <h4 v-else class="mt-3">Der Geschäftsführer deines Unternehmens muss ein Abo auswählen um Zugriff zu erhalten!</h4>
+      <h4 class="mt-3">Auf diese Seite hat nur der Geschäftsführer Zugriff!</h4>
     </div>
 
   </div>
@@ -14,7 +13,7 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
 export default {
-  name: 'LockedOverlay',
+  name: 'NoAccessOverlay',
   setup() {
     const store = useStore();
     const router = useRouter();
@@ -49,13 +48,6 @@ export default {
   top: 35%;
 }
 
-.btn {
-  top: 20px;
-  position: relative;
-  font-size: 1.5rem;
-  margin: auto;
-  display: block;
-}
 
 /*
 .overlay {
