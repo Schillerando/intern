@@ -686,7 +686,7 @@ export default {
           const { data, error } = await supabase
             .from('companies')
             .select()
-            .eq('id', nameInput.value.replace(/\s/g, '').toLowerCase());
+            .eq('alias', nameInput.value.replace(/\s/g, '').toLowerCase());
 
           if (error || data[0] != null) {
             this.failureAlertTitle = 'Name schon vergeben';

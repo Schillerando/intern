@@ -219,15 +219,24 @@ const store = createStore({
       try {
         commit('setState', 'loading');
 
-        const id = form.name.replace(/\s/g, '').toLowerCase()
+        const alias = form.name.replace(/\s/g, '').toLowerCase()
+
+        const { data, error } = await supabase.from('companies').insert({
+          alias: alias,
+          name: form.name,
+          categories: [form.category],
+          location: form.location,
+          info: form.description,
+          user_uid: this.getters.getUser.id,
+          employees: form.employees,
+          abo: form.abo,
+        });
 
         var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
-        var fileName = id + '.' + type.split('/')[1]
-
-        var imagePath;
+        var fileName = data.id + '.' + type.split('/')[1]
 
         {
-          const { data, error } = await supabase
+          const { error } = await supabase
             .storage
             .from('sellers-headings')
             .upload(fileName, form.image, {
@@ -238,20 +247,7 @@ const store = createStore({
 
           if (error) throw error;
 
-          imagePath = data.path
         }
-
-        const { error } = await supabase.from('companies').insert({
-          id: id,
-          name: form.name,
-          categories: [form.category],
-          location: form.location,
-          info: form.description,
-          user_uid: this.getters.getUser.id,
-          employees: form.employees,
-          abo: form.abo,
-          header_picture: imagePath
-        });
 
         {
           const { data, error } = await supabase.auth.updateUser({
