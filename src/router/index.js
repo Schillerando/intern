@@ -117,7 +117,7 @@ router.beforeEach((to, from, next) => {
   console.log(to.meta.company)
 
   if((to.meta.auth || to.meta.company) && user == null) next({ path: 'auth', query: { redirect: to.fullPath } });
-  else if(to.meta.company && userCompany == null) next({ path: 'companyRegistration', query: { redirect: to.fullPath } });
+  else if(to.meta.company && userCompany == null) next({ path: 'companyRegistration' });
   else if(to.meta.company == false && userCompany != null) next({ path: from.path })
   else if(to.meta.auth == false && user != null) next({ path: from.path })
   else if(to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })

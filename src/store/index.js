@@ -221,6 +221,10 @@ const store = createStore({
 
         const alias = form.name.replace(/\s/g, '').toLowerCase()
 
+        var uniqueEmployees = form.employees.filter(function(item, pos) {
+          return form.employees.indexOf(item) == pos;
+        })
+
         const { data, error } = await supabase.from('companies').insert({
           alias: alias,
           name: form.name,
@@ -228,26 +232,29 @@ const store = createStore({
           location: form.location,
           info: form.description,
           user_uid: this.getters.getUser.id,
-          employees: form.employees,
+          employees: uniqueEmployees,
           abo: form.abo,
         });
 
-        var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
-        var fileName = data.id + '.' + type.split('/')[1]
+        if(form.image != null) {
+          var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
+          var fileName = data.id + '.' + type.split('/')[1]
 
-        {
-          const { error } = await supabase
-            .storage
-            .from('sellers-headings')
-            .upload(fileName, form.image, {
-              cacheControl: '3600',
-              upsert: true,
-              contentType: type
-            })
+          {
+            const { error } = await supabase
+              .storage
+              .from('sellers-headings')
+              .upload(fileName, form.image, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: type
+              })
 
-          if (error) throw error;
+            if (error) throw error;
 
+          }
         }
+        
 
         {
           const { data, error } = await supabase.auth.updateUser({
@@ -260,8 +267,6 @@ const store = createStore({
 
         if (error) throw error;
 
-        const productIDs = [];
-
         for (var i = 0; i < form.products.length; i++) {
           const product = form.products[i];
 
@@ -272,22 +277,14 @@ const store = createStore({
               info: product.description,
               price: product.price,
               categories: product.categories,
-              company_id: form.name.replace(/\s/g, '').toLowerCase(),
+              company_id: data.id,
               auth_uid: this.getters.getUser.id,
             })
             .select();
 
           if (error) throw error;
 
-          productIDs.push(data[0].id);
         }
-
-        const { error2 } = await supabase
-          .from('companies')
-          .update({ products: productIDs })
-          .eq('id', form.name.replace(/\s/g, '').toLowerCase());
-
-        if (error2) throw error2;
 
         console.log('Successfully registered');
 
