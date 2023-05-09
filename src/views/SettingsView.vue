@@ -5,6 +5,16 @@
     <div class="container">
       <div class="row">
 
+        <div class="col-12">
+          <div
+            v-if="companyData.verified == false"
+            class="alert alert-warning"
+            role="alert"
+          >
+            Dein Unternehmen wird noch überprüft. Erst nach Bestätigung werden dein Unternehmen und seine Produkte auf schillerando.de zu sehen sein.
+          </div>
+        </div>
+
         <div class="col-lg-4">
           <div class="card m-1">
             <div class="card-header">Mitarbeiter</div>
