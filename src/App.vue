@@ -25,15 +25,11 @@ export default {
   },
   setup() {
     const store = useStore();
+    store.dispatch('reload');
 
     return {
       store
     }
-  },
-  mounted() {
-    console.log('reload');
-
-    this.store.dispatch('reload');
   },
 };
 </script>

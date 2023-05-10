@@ -3,9 +3,7 @@ import HomeView from '../views/HomeView';
 import ProductView from '../views/ProductView';
 import ServiceView from '../views/ServiceView';
 import SettingsView from '../views/SettingsView';
-import AuthView from '../views/AuthView';
 import CompanyRegistrationView from '../views/CompanyRegistrationView';
-import UpdatePasswordView from '../views/UpdatePasswordView';
 import AccountingView from '../views/AccountingView';
 import AGBView from '../views/AGBView';
 import UpdateAboView from '../views/UpdateAboView';
@@ -55,15 +53,6 @@ const routes = [
     },
   },
   {
-    path: '/auth',
-    name: 'AuthView',
-    component: AuthView,
-    meta: {
-      footer: false,
-      auth: false
-    },
-  },
-  {
     path: '/companyRegistration',
     name: 'CompanyRegistrationView',
     component: CompanyRegistrationView,
@@ -71,14 +60,6 @@ const routes = [
       footer: false,
       company: false,
       auth: true
-    },
-  },
-  {
-    path: '/update-password',
-    name: 'UpdatePasswordView',
-    component: UpdatePasswordView,
-    meta: {
-      footer: false,
     },
   },
   {
@@ -111,14 +92,9 @@ router.beforeEach((to, from, next) => {
   const user = store.getters.getUser;
   const userCompany = store.getters.getUserCompany;
 
-  console.log(user)
-  console.log(userCompany)
-  console.log(to.meta.auth)
-  console.log(to.meta.company)
-
-  if(to.name != 'HomeView' && to.name != 'AGBView' && user.email_confirmed_at == null) next({ path: '' })
-  else if((to.meta.auth || to.meta.company) && user == null) next({ path: 'auth', query: { redirect: to.fullPath } });
-  else if(to.meta.company && userCompany == null) next({ path: 'companyRegistration' });
+  if((to.meta.auth || to.meta.company) && user == null) window.location.replace('http://localhost:8080/auth?redirect=ext_'+to.path)
+  else if(to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) window.location.replace('http://localhost:8080/account')
+  else if(to.meta.company && userCompany == null && user != null) next({ path: 'companyRegistration' });
   else if(to.meta.company == false && userCompany != null) next({ path: from.path })
   else if(to.meta.auth == false && user != null) next({ path: from.path })
   else if(to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
