@@ -33,12 +33,20 @@ const store = createStore({
     },
   },
   actions: {
-    async reload() {  
-      this.dispatch('getSharedLogin')
+    async reload({ commit }) {  
+      const { data, error } = await supabase.auth.refreshSession();
+
+      if (error || data.session == null) {
+        commit('setUser', null);
+        this.dispatch('getSharedLogin')
+      } else {
+        commit('setUser', data.user);
+        this.dispatch('startUserCompanySubscription');      
+      }
+
       this.timer = setInterval(() => {
         this.dispatch('getSharedLogin')
       }, 1000)
-      this.dispatch('startUserCompanySubscription');      
     },
     async getSharedLogin({ commit }) {
       const cookies = document.cookie.split(/\s*;\s*/).map(cookie => cookie.split('='));
@@ -52,7 +60,6 @@ const store = createStore({
         })
 
         if (error || data.session == null) {
-          console.log('no session');
           commit('setUser', null);
           commit('setUserCompany', null);
           router.go(router.currentRoute);
@@ -63,10 +70,13 @@ const store = createStore({
           router.go(router.currentRoute);
         }
       }
-      else {
+      else if (this.getters.getUser != null) {
         commit('setUser', null);
         commit('setUserCompany', null);
-        router.go(router.currentRoute);
+        await router.replace(router.currentRoute);
+      } else {
+        commit('setUserCompany', null);
+        commit('setUser', null);
       }
     },
     async startUserCompanySubscription({ commit }) {
