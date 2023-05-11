@@ -245,7 +245,7 @@
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h4 class="mt-2">50$ (5€)<sup>2</sup></h4>
+                        <h4 class="mt-2">90$<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>
@@ -270,7 +270,7 @@
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h4 class="mt-2">100$ (10€)<sup>2</sup></h4>
+                        <h4 class="mt-2">150$<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>
@@ -298,7 +298,7 @@
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h4 class="mt-2">200$ (20€)<sup>2</sup></h4>
+                        <h4 class="mt-2">250$<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>

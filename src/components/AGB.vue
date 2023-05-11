@@ -46,25 +46,28 @@
     Kostenlose Buchhaltung<br />
     Gebührenpflichtige Lieferungen*<br />
     Gebührenpflichtige Services<br />
-    Kosten: 50$ (5€)**<br />
+    Kosten: 90$**<br />
     <br />
     Abo 2 (Delivery): <br />
     Kostenlose Buchhaltung<br />
     Kostenlose Lieferungen<br />
     Gebührenpflichtige Services<br />
-    Kosten: 100$ (10€)**<br />
+    Kosten: 150$**<br />
     <br />
     Abo 3 (Business): <br />
     Kostenlose Buchhaltung<br />
     Kostenlose Lieferungen<br />
     Kostenlose Services<br />
-    Kosten: 200 $ (20€)**<br />
+    Kosten: 250$**<br />
     <br />
-    *Zu Abo 1 (Standard):  Bei Abo 1 (Standard) werden 5% Lieferkosten des Bestellwerts fällig. Daher bezahlt der Schillerando Lieferant bei Abholung einer Bestellung 95% der regulären Kosten. <br />
+    *Zu Abo 1 (Standard): Bei Abo 1 (Standard) werden 5% Lieferkosten des Bestellwerts fällig. Daher bezahlt der Schillerando Lieferant bei Abholung einer Bestellung 95% der regulären Kosten. <br />
     <br />
     **$ entspricht der Staatswährung, in der die Kosten des ausgewählten Abos bezahlt werden müssen. (1$ ≙ 0,1€)<br />
     <br />
     Sollten die Abokosten nicht zur vereinbarten Frist bezahlt werden, so hält sich Schillerando das Recht vor, alle Anzeigen und Produkte wieder zu entfernen.<br />
+    <br />
+    Bei zeitlich begrenzten Rabatten auf die Abo Preise, wird der Preis fällig, der zum Zeitpunkt der Auswahl beworben wurde.
+    <br />
     <br />
     (3) Bei Registrierung ohne Abonnement wird das Unternehmen weder im Onlineshop angezeigt noch hat es Zugriff auf Schillerando Business.
     </p>

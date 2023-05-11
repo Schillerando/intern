@@ -87,10 +87,13 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  if(to.query.ext == 'true') await new Promise((resolve) => setTimeout(resolve, 500));
+
   // get current user info
   const user = store.getters.getUser;
   const userCompany = store.getters.getUserCompany;
+
 
   if((to.meta.auth || to.meta.company) && user == null) window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=ext_'+to.path)
   else if(to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) window.location.replace(process.env.VUE_APP_MAIN_URL + '/account')
