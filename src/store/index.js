@@ -73,7 +73,7 @@ const store = createStore({
       else if (this.getters.getUser != null) {
         commit('setUser', null);
         commit('setUserCompany', null);
-        await router.replace(router.currentRoute);
+        router.go(router.currentRoute);
       } else {
         commit('setUserCompany', null);
         commit('setUser', null);
