@@ -24,7 +24,7 @@
       <br />
     (4) Speicherung des Vertragstextes:
     Schillerando speichert den Vertragstext, sowie das Einverständnis unserer Kunden. 
-    Die AGB kann jederzeit auch unter <a href="https://www.business.schillerando.de/agb">https://www.business.schillerando.de/agb</a> eingesehen werden.</p>
+    Die AGB kann jederzeit auch unter <a :href="businessUrl + '/agb'">https://www.business.schillerando.de/agb</a> eingesehen werden.</p>
 
     <h3>§3 Preise, Zahlung, Fälligkeit</h3>
 
@@ -93,6 +93,11 @@
 <script>
 export default {
   name: 'AGB',
+  data() {
+    return {
+      businessUrl: process.env.VUE_APP_BUSINESS_URL,
+    };
+  }
 };
 </script>
 

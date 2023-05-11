@@ -37,10 +37,10 @@ const store = createStore({
       this.dispatch('getSharedLogin')
       this.timer = setInterval(() => {
         this.dispatch('getSharedLogin')
-      }, 1000)      
+      }, 1000)
+      this.dispatch('startUserCompanySubscription');      
     },
     async getSharedLogin({ commit }) {
-      console.log('test')
       const cookies = document.cookie.split(/\s*;\s*/).map(cookie => cookie.split('='));
       const accessTokenCookie = cookies.find(x => x[0] == 'supabase-access-token');
       const refreshTokenCookie = cookies.find(x => x[0] == 'supabase-refresh-token');
@@ -51,23 +51,22 @@ const store = createStore({
           refresh_token: refreshTokenCookie[1],
         })
 
-        console.log(data)
-
         if (error || data.session == null) {
           console.log('no session');
           commit('setUser', null);
           commit('setUserCompany', null);
-          await router.replace('/');
+          router.go(router.currentRoute);
         } else {
-          console.log(data.user);
           commit('setUser', data.user);
           this.dispatch('startUserCompanySubscription');
+
+          router.go(router.currentRoute);
         }
       }
       else {
         commit('setUser', null);
         commit('setUserCompany', null);
-        await router.replace('/');
+        router.go(router.currentRoute);
       }
     },
     async startUserCompanySubscription({ commit }) {
@@ -89,7 +88,6 @@ const store = createStore({
         commit('setUserCompany', null);
         if (data[0] == null) return;
 
-        console.log(data);
         commit('setUserCompany', data[0]);
 
         const companySubscription = supabase.channel('any').on(

@@ -31,7 +31,7 @@
           <router-link class="nav-link" to="/einstellungen">Einstellungen</router-link>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="https://schillerando.de">
+          <a class="nav-link" :href="mainUrl">
             <i class="fa-solid fa-shuffle mx-1"></i>
             Schillerando
           </a>
@@ -47,6 +47,11 @@ export default {
   name: 'NavBar',
   props: {
     info: String,
+  },
+  data() {
+    return {
+      mainUrl: process.env.VUE_APP_MAIN_URL,
+    };
   },
   mounted() {
     /*

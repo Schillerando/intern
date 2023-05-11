@@ -92,8 +92,8 @@ router.beforeEach((to, from, next) => {
   const user = store.getters.getUser;
   const userCompany = store.getters.getUserCompany;
 
-  if((to.meta.auth || to.meta.company) && user == null) window.location.replace('http://localhost:8080/auth?redirect=ext_'+to.path)
-  else if(to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) window.location.replace('http://localhost:8080/account')
+  if((to.meta.auth || to.meta.company) && user == null) window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=ext_'+to.path)
+  else if(to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) window.location.replace(process.env.VUE_APP_MAIN_URL + '/account')
   else if(to.meta.company && userCompany == null && user != null) next({ path: 'companyRegistration' });
   else if(to.meta.company == false && userCompany != null) next({ path: from.path })
   else if(to.meta.auth == false && user != null) next({ path: from.path })
