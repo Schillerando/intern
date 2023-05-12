@@ -316,8 +316,8 @@
                     </div>
                   </div>
 
-                  <p class="note"><sup>1</sup> 10% Lieferkosten pro Bestellung für Unternehmen. Beispiel: Kunde bestellt Cola für 20$ (2€). Schillerando Mitarbeiter geht zu Unternehmen und kauft Cola für 18$ (1.8€). Schillerando Mitarbeiter liefert Cola zum Kunden und bekommt 20$ (2€). Schillerando erhält 2$ (20cent) Lieferkosten.</p>
-                  <p class="note"><sup>2</sup> $ entspricht der Staatswährung (1$ = 0.01€). Das Geld muss am ersten Tag von SAS bei Schillerando abgegeben werden bzw. wird von einem Schillerando Mitarbeiter eingesammelt.</p>
+                  <p class="note"><sup>1</sup> 10% Lieferkosten pro Bestellung für Unternehmen. Beispiel: Kunde bestellt Cola für 20$ (2€). Schillerando Mitarbeiter geht zu Unternehmen und kauft Cola für 18$ (1.8€). Schillerando Mitarbeiter liefert Cola zum Kunden und bekommt 20$ (2€). Schillerando erhält 2$ (0.20€) Lieferkosten.</p>
+                  <p class="note"><sup>2</sup> $ entspricht der Staatswährung (1$ = 0.1€). Das Geld muss am ersten Tag von SAS bei Schillerando abgegeben werden bzw. wird von einem Schillerando Mitarbeiter eingesammelt.</p>
 
                   <div
                     class="alert alert-danger"

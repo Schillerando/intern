@@ -33,7 +33,7 @@ const store = createStore({
     },
   },
   actions: {
-    async reload({ commit }) {  
+    async reload({ commit }) {
       const { data, error } = await supabase.auth.refreshSession();
 
       if (error || data.session == null) {
@@ -41,7 +41,7 @@ const store = createStore({
         this.dispatch('getSharedLogin')
       } else {
         commit('setUser', data.user);
-        this.dispatch('startUserCompanySubscription');      
+        this.dispatch('startUserCompanySubscription');
       }
 
       this.timer = setInterval(() => {
@@ -53,7 +53,7 @@ const store = createStore({
       const accessTokenCookie = cookies.find(x => x[0] == 'supabase-access-token');
       const refreshTokenCookie = cookies.find(x => x[0] == 'supabase-refresh-token');
       if (accessTokenCookie && refreshTokenCookie) {
-        if(this.getters.getUser != null) return
+        if (this.getters.getUser != null) return
         const { data, error } = await supabase.auth.setSession({
           access_token: accessTokenCookie[1],
           refresh_token: refreshTokenCookie[1],
@@ -62,6 +62,10 @@ const store = createStore({
         if (error || data.session == null) {
           commit('setUser', null);
           commit('setUserCompany', null);
+          const expires = new Date(0).toUTCString()
+          let domain = new URL(process.env.VUE_APP_MAIN_URL).hostname
+          document.cookie = `supabase-access-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
+          document.cookie = `supabase-refresh-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
           router.go(router.currentRoute);
         } else {
           commit('setUser', data.user);
@@ -86,11 +90,11 @@ const store = createStore({
           .select()
           .or(
             'user_uid.eq.' +
-              this.getters.getUser.id +
-              ',employees.cs.' +
-              '{"' +
-              this.getters.getUser.email +
-              '"}'
+            this.getters.getUser.id +
+            ',employees.cs.' +
+            '{"' +
+            this.getters.getUser.email +
+            '"}'
           );
 
         if (error) throw error;
@@ -135,7 +139,7 @@ const store = createStore({
 
         const alias = form.name.replace(/\s/g, '').toLowerCase()
 
-        var uniqueEmployees = form.employees.filter(function(item, pos) {
+        var uniqueEmployees = form.employees.filter(function (item, pos) {
           return form.employees.indexOf(item) == pos;
         })
 
@@ -150,7 +154,7 @@ const store = createStore({
           abo: form.abo,
         });
 
-        if(form.image != null) {
+        if (form.image != null) {
           var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
           var fileName = data.id + '.' + type.split('/')[1]
 
@@ -168,7 +172,7 @@ const store = createStore({
 
           }
         }
-        
+
 
         {
           const { data, error } = await supabase.auth.updateUser({
@@ -219,7 +223,7 @@ const store = createStore({
         const { error } = await supabase.from('companies').update({
           abo: form.abo
         })
-        .eq('id', this.getters.getUserCompany.id);
+          .eq('id', this.getters.getUserCompany.id);
 
         if (error) throw error;
 
