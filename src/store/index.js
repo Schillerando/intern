@@ -48,6 +48,7 @@ const store = createStore({
         this.dispatch('getSharedLogin')
       }, 1000)
     },
+    
     async getSharedLogin({ commit }) {
       const cookies = document.cookie.split(/\s*;\s*/).map(cookie => cookie.split('='));
       const accessTokenCookie = cookies.find(x => x[0] == 'supabase-access-token');
