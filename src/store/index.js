@@ -37,7 +37,6 @@ const store = createStore({
       const { data, error } = await supabase.auth.refreshSession();
 
       if (error || data.session == null) {
-        commit('setUser', null);
         this.dispatch('getSharedLogin')
       } else {
         commit('setUser', data.user);
@@ -67,7 +66,6 @@ const store = createStore({
           let domain = new URL(process.env.VUE_APP_MAIN_URL).hostname
           document.cookie = `supabase-access-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
           document.cookie = `supabase-refresh-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
-          router.go(router.currentRoute);
         } else {
           commit('setUser', data.user);
           this.dispatch('startUserCompanySubscription');
@@ -153,7 +151,8 @@ const store = createStore({
           user_uid: this.getters.getUser.id,
           employees: uniqueEmployees,
           abo: form.abo,
-        });
+        })
+        .select();
 
         if (form.image != null) {
           var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
