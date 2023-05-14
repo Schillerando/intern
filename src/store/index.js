@@ -54,6 +54,7 @@ const store = createStore({
       const refreshTokenCookie = cookies.find(x => x[0] == 'supabase-refresh-token');
       if (accessTokenCookie && refreshTokenCookie) {
         if (this.getters.getUser != null) return
+        
         const { data, error } = await supabase.auth.setSession({
           access_token: accessTokenCookie[1],
           refresh_token: refreshTokenCookie[1],
@@ -154,9 +155,11 @@ const store = createStore({
         })
         .select();
 
+        if (error) throw error;
+
         if (form.image != null) {
           var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
-          var fileName = data.id + '.' + type.split('/')[1]
+          var fileName = data[0].id + '.' + type.split('/')[1]
 
           {
             const { error } = await supabase
@@ -171,6 +174,15 @@ const store = createStore({
             if (error) throw error;
 
           }
+
+          {
+            const { error } = await supabase
+              .from('companies')
+              .update({ header_picture: fileName })
+              .eq('id', data[0].id)
+
+              if (error) throw error;
+          }
         }
 
 
@@ -183,8 +195,6 @@ const store = createStore({
           commit('setUser', data.user);
         }
 
-        if (error) throw error;
-
         for (var i = 0; i < form.products.length; i++) {
           const product = form.products[i];
 
@@ -195,7 +205,7 @@ const store = createStore({
               info: product.description,
               price: product.price,
               categories: product.categories,
-              company_id: data.id,
+              company_id: data[0].id,
               auth_uid: this.getters.getUser.id,
             })
             .select();

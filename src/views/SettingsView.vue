@@ -109,6 +109,27 @@
           <div class="card m-1">
             <div class="card-header">Informationen</div>
             <div class="card-body">
+              <div class="image">
+                <div v-if="form.image == null" class="no-image">
+                  <i class="fa-solid fa-image fa-2xl"></i>
+                </div>
+                <img
+                  v-else
+                  :src="this.form.image"
+                  alt="Unternehmen Bild"
+                  id="companyImage"
+                />
+              </div>
+
+              <input
+                class="form-control form-control-sm mb-4"
+                type="file"
+                id="formFile"
+                accept="image/*"
+                @change="imageInput()"
+                :disabled="!isCompanyEditing"
+              />
+
               <form class="needs-validation" novalidate>
                 <div class="input-group mb-3">
                   <span class="input-group-text"
@@ -282,6 +303,8 @@ export default {
       description: '',
       employees: [''],
       abo: '',
+      image: null, 
+      unchangedImage: null
     });
 
     return {
@@ -352,7 +375,33 @@ export default {
   async created() {
     this.employees = this.companyData.employees;
   },
+  async mounted() {
+    if (this.companyData.header_picture != null) {
+      const response = await supabase.storage
+        .from('public/sellers-headings')
+        .download(this.companyData.header_picture);
+      if (response.data != null) {
+        this.form.image = await response.data.text();
+        this.form.unchangedImage = await response.data.text();
+      } 
+      if (response.error) console.warn(response.error);
+    }
+  },
   methods: {
+    imageInput() {
+      var input = document.getElementById('formFile');
+
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = e => {
+          this.form.image = e.target.result
+        };
+
+        reader.readAsDataURL(input.files[0]);
+      }
+
+    },
     addEmployee() {
       var emailInputs = document.getElementsByClassName('employees-mail');
       var index = 0;
@@ -447,12 +496,12 @@ export default {
 
         if (
           nameInput.value.replace(/\s/g, '').toLowerCase() !=
-          this.companyData.id
+          this.companyData.alias
         ) {
           const { data, error } = await supabase
             .from('companies')
             .select()
-            .eq('id', nameInput.value.replace(/\s/g, '').toLowerCase());
+            .eq('alias', nameInput.value.replace(/\s/g, '').toLowerCase());
 
           if (error || data[0] != null) {
             nameInput.classList.remove('is-valid');
@@ -526,7 +575,7 @@ export default {
         const { data, error } = await supabase
           .from('companies')
           .update({
-            id: this.form.name.replace(/\s/g, '').toLowerCase(),
+            alias: this.form.name.replace(/\s/g, '').toLowerCase(),
             name: this.form.name,
             categories: [this.form.category],
             location: this.form.location,
@@ -536,6 +585,34 @@ export default {
           .select();
 
         if (error) throw error;
+
+        if (this.form.image != null && this.form.image != this.form.unchangedImage) {
+          var type = this.form.image.substring(this.form.image.indexOf(':'), this.form.image.indexOf(';')).replace(':', '')
+          var fileName = data[0].id + '.' + type.split('/')[1]
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('sellers-headings')
+              .upload(fileName, this.form.image, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: type
+              })
+
+            if (error) throw error;
+
+          }
+
+          {
+            const { error } = await supabase
+              .from('companies')
+              .update({ header_picture: fileName })
+              .eq('id', data[0].id)
+
+              if (error) throw error;
+          }
+        }
 
         this.store.commit('setUserCompany', data[0]);
 
@@ -763,5 +840,36 @@ export default {
 .pay-setup {
   border: none;
   transition: all 0.2s ease-in-out;
+}
+
+.image {
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%;
+  margin-bottom: 10px;
+}
+
+.no-image {
+  background-color: gray;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.375rem;
+}
+
+img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  left: 0;
+}
+
+.fa-image {
+  position: absolute;
+  font-size: 6rem;
+  top: 50%;
+  left: calc(50% - 3rem);
 }
 </style>
