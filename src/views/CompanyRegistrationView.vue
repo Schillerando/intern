@@ -104,7 +104,7 @@
                         @input="validatePage(0, false)"
                         placeholder="Beschreibung"
                         required
-                        maxlength="400"
+                        maxlength="100"
                         style="resize: none"
                         rows="5"
                         cols="50"
@@ -650,7 +650,7 @@ export default {
 
         if (
           locationInput.value.trim().length < 3 ||
-          locationInput.value.trim().length > 40
+          locationInput.value.trim().length > 100
         ) {
           locationInput.classList.remove('is-valid');
           locationInput.classList.add('is-invalid');
