@@ -5,7 +5,6 @@
       <button v-if="store.getters.getUser.id == store.getters.getUserCompany.user_uid" class="btn btn-primary" @click="router.push('updateAbo')" >Abo auswählen</button>
       <h4 v-else class="mt-3">Der Geschäftsführer deines Unternehmens muss ein Abo auswählen um Zugriff zu erhalten!</h4>
     </div>
-
   </div>
 </template>
 

@@ -68,16 +68,26 @@ const store = createStore({
           document.cookie = `supabase-access-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
           document.cookie = `supabase-refresh-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
         } else {
-          commit('setUser', data.user);
-          this.dispatch('startUserCompanySubscription');
+          if (this.getters.getUser != null) {
+            commit('setUser', data.user);
+            this.dispatch('startUserCompanySubscription');
+          } else {
+            commit('setUser', data.user);
+            this.dispatch('startUserCompanySubscription');
 
-          router.go(router.currentRoute);
+            router.go(router.currentRoute);
+          }
+
         }
       }
       else if (this.getters.getUser != null) {
-        commit('setUser', null);
-        commit('setUserCompany', null);
-        router.go(router.currentRoute);
+        const { data, error } = await supabase.auth.getSession();
+
+        if (data.session == null || error) {
+          commit('setUser', null);
+          commit('setUserCompany', null);
+          router.go(router.currentRoute);
+        }
       } else {
         commit('setUserCompany', null);
         commit('setUser', null);

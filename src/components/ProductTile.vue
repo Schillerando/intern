@@ -1,28 +1,26 @@
 <template>
   <div class="card">
     <div class="image">
-      <div v-if="data.product_picture == null" class="no-image"></div>
-      <img v-else src="@/assets/cola.png" alt="" />
+      <div v-if="this.data.image == null" class="no-image">
+        <i class="fa-solid fa-image fa-2xl"></i>
+        {{ this.data.image }}
+      </div>
+      <img v-else :src="this.image" alt="" />
     </div>
     <div class="info">
       <div>
         <p class="name">{{ data.name }}</p>
-      </div>
-      <div>
-        <p class="company_name">{{ data.company_name }}</p>
+        <p class="category">{{ data.categories[0] }}</p>
+
       </div>
 
       <p class="price">{{ data.price }} $</p>
 
-      <button class="btn btn-primary" @click="addProductToCart">
-        <i class="fa-solid fa-cart-plus fa-lg"></i>
-      </button>
     </div>
   </div>
 </template>
 
 <script>
-import router from '@/router';
 import { useStore } from 'vuex';
 
 export default {
@@ -34,13 +32,6 @@ export default {
     return {
       store,
     };
-  },
-  methods: {
-    addProductToCart() {
-      if (this.store.getters.getUser == null)
-        router.push({ path: 'auth', query: { redirect: 'produkte' } });
-      this.store.commit('addProductToCart', this.data);
-    },
   },
 };
 </script>
@@ -77,6 +68,7 @@ export default {
   text-align: left;
   bottom: 8px;
   left: 15px;
+  color: black;
 }
 
 .row {
@@ -102,6 +94,7 @@ export default {
 .card {
   flex-direction: row;
   overflow: hidden;
+  margin: 2.5%;
 }
 
 .image {
@@ -129,6 +122,31 @@ img {
   top: 0;
   left: 0;
   object-fit: scale-down;
+}
+
+.category {
+  text-align: left;
+  margin-top: -10px;
+  font-weight: 300;
+  margin: -10px 0 0 15px;
+}
+
+.btn-primary {
+  background-color: #00a100;
+  border-color: #00a100;
+}
+
+.btn-primary:hover {
+  background-color: #007400;
+  border-color: #007400;
+}
+
+.fa-image {
+  position: absolute;
+  font-size: 4rem;
+  top: 50%;
+  left: calc(50% - 2rem);
+  color: black;
 }
 
 /*   border-radius: 0.375rem 0 0 0.375rem; */
