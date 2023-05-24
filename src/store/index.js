@@ -9,6 +9,7 @@ const store = createStore({
     session: null,
     userCompany: null,
     state: undefined,
+    currentProduct: null
   },
   mutations: {
     setUser(state, payload) {
@@ -19,6 +20,9 @@ const store = createStore({
     },
     setState(state, payload) {
       state.state = payload;
+    },
+    setCurrentProduct(state, payload) {
+      state.currentProduct = payload;
     },
   },
   getters: {
@@ -31,6 +35,9 @@ const store = createStore({
     getState(state) {
       return state.state;
     },
+    getCurrentProduct(state) {
+      return state.currentProduct;
+    },
   },
   actions: {
     async reload({ commit }) {
@@ -41,6 +48,7 @@ const store = createStore({
       } else {
         commit('setUser', data.user);
         this.dispatch('startUserCompanySubscription');
+
       }
 
       this.timer = setInterval(() => {
@@ -52,9 +60,9 @@ const store = createStore({
       const cookies = document.cookie.split(/\s*;\s*/).map(cookie => cookie.split('='));
       const accessTokenCookie = cookies.find(x => x[0] == 'supabase-access-token');
       const refreshTokenCookie = cookies.find(x => x[0] == 'supabase-refresh-token');
-      if (accessTokenCookie && refreshTokenCookie) {
-        if (this.getters.getUser != null) return
-        
+      if (accessTokenCookie && refreshTokenCookie) {        
+        if(this.getters.getUser != null) return;
+
         const { data, error } = await supabase.auth.setSession({
           access_token: accessTokenCookie[1],
           refresh_token: refreshTokenCookie[1],
@@ -63,10 +71,11 @@ const store = createStore({
         if (error || data.session == null) {
           commit('setUser', null);
           commit('setUserCompany', null);
-          const expires = new Date(0).toUTCString()
-          let domain = new URL(process.env.VUE_APP_MAIN_URL).hostname
-          document.cookie = `supabase-access-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
-          document.cookie = `supabase-refresh-token=; Domain=${domain}; path=/; expires=${expires}; SameSite=Lax; secure`
+
+          document.cookie = `supabase-access-token=false;`;
+          document.cookie = `supabase-refresh-token=false;`;
+
+          router.go(router.currentRoute);
         } else {
           if (this.getters.getUser != null) {
             commit('setUser', data.user);
@@ -81,13 +90,9 @@ const store = createStore({
         }
       }
       else if (this.getters.getUser != null) {
-        const { data, error } = await supabase.auth.getSession();
-
-        if (data.session == null || error) {
-          commit('setUser', null);
-          commit('setUserCompany', null);
-          router.go(router.currentRoute);
-        }
+        commit('setUser', null);
+        commit('setUserCompany', null);
+        router.go(router.currentRoute);
       } else {
         commit('setUserCompany', null);
         commit('setUser', null);
@@ -109,8 +114,11 @@ const store = createStore({
 
         if (error) throw error;
 
-        commit('setUserCompany', null);
-        if (data[0] == null) return;
+        
+        if (data[0] == null) {
+          commit('setUserCompany', null);
+          return
+        }
 
         commit('setUserCompany', data[0]);
 
@@ -130,6 +138,7 @@ const store = createStore({
 
         companySubscription.subscribe();
       } catch (error) {
+        commit('setUserCompany', null);
         console.log(error.error_description || error.message);
       }
     },
@@ -162,6 +171,7 @@ const store = createStore({
           user_uid: this.getters.getUser.id,
           employees: uniqueEmployees,
           abo: form.abo,
+          relevance: form.abo == 'Business' ? 50 : 100
         })
         .select();
 
@@ -241,7 +251,8 @@ const store = createStore({
         commit('setState', 'loading');
 
         const { error } = await supabase.from('companies').update({
-          abo: form.abo
+          abo: form.abo,
+          relevance: form.abo == 'Business' ? 50 : 100
         })
           .eq('id', this.getters.getUserCompany.id);
 
@@ -255,6 +266,64 @@ const store = createStore({
         console.log(error.error_description || error.message);
       }
     },
+    async updateProduct({ commit }, product) {
+      try {
+        commit('setState', 'loading');
+
+        const { data, error } = await supabase.from('products').update({
+          name: product.name,
+          info: product.description,
+          categories: product.categories,
+          price: product.price,
+          delivery: product.delivery,
+          public: product.public
+        })
+        .eq('id', product.id)
+        .select()
+
+        if (error) throw error;
+
+        commit('setCurrentProduct', data[0])
+
+        if (product.image != null && product.imageBefore != product.image) {
+
+          var type = product.image.substring(product.image.indexOf(':'), product.image.indexOf(';')).replace(':', '')
+          var fileName = product.id + '.' + type.split('/')[1]
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('products-pictures')
+              .upload(fileName, product.image, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: type
+              })
+
+            if (error) throw error;
+
+          }
+
+          {
+            const { data, error } = await supabase
+              .from('products')
+              .update({ product_picture: fileName })
+              .eq('id', product.id)
+              .select()
+
+              if (error) throw error;
+
+              commit('setCurrentProduct', data[0])
+          }
+        }
+
+        commit('setState', 'success');
+      } catch (error) {
+        commit('setCurrentProduct', null)
+        commit('setState', 'failure');
+        console.log(error.error_description || error.message);
+      }
+    }
   },
 
   modules: {},

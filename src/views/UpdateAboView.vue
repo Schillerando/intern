@@ -38,7 +38,7 @@
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h4 class="mt-2">90$<sup>2</sup></h4>
+                        <h4 class="mt-2">50$<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>
@@ -63,7 +63,7 @@
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h4 class="mt-2">150$<sup>2</sup></h4>
+                        <h4 class="mt-2">100$<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>
@@ -91,7 +91,7 @@
                         </ul>
                       </div>
                       <div class="card-footer">
-                        <h4 class="mt-2">250$<sup>2</sup></h4>
+                        <h4 class="mt-2">200$<sup>2</sup></h4>
                       </div>
                     </div>
                   </div>

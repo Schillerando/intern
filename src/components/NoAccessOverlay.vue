@@ -1,14 +1,17 @@
 <template>
-  <div v-if="store.getters.getUser.id != store.getters.getUserCompany.user_uid && store.getters.getUserCompany.abo != '' && store.getters.getUserCompany.abo != null" class="overlay">
-    <div class="centered">
-      <img class="lock" src="@/assets/lock.png" alt="">
-      <h4 class="mt-3">Auf diese Seite hat nur der Geschäftsführer Zugriff!</h4>
-    </div>
+  <div v-if="companyData != null && companyData != undefined">
+    <div v-if="userData.id != companyData.user_uid && companyData.abo != '' && companyData.abo != null" class="overlay">
+      <div class="centered">
+        <img class="lock" src="@/assets/lock.png" alt="">
+        <h4 class="mt-3">Auf diese Seite hat nur der Geschäftsführer Zugriff!</h4>
+      </div>
 
+    </div>
   </div>
 </template>
 
 <script>
+import { computed } from 'vue'; 
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
@@ -18,9 +21,14 @@ export default {
     const store = useStore();
     const router = useRouter();
 
+    const companyData = computed(() => store.state.userCompany);
+    const userData = computed(() => store.state.user);
+
     return {
       store,
-      router
+      router,
+      companyData,
+      userData
     };
   },
 };

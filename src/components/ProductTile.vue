@@ -1,38 +1,105 @@
 <template>
+  <EditProductOverlay v-if="edit" :data="product" @stopEditingProduct="stopEditingProduct($event)" />
+
   <div class="card">
     <div class="image">
-      <div v-if="this.data.image == null" class="no-image">
+      <div v-if="this.product.image == null" class="no-image">
         <i class="fa-solid fa-image fa-2xl"></i>
-        {{ this.data.image }}
+        {{ this.product.image }}
       </div>
-      <img v-else :src="this.image" alt="" />
+      <img v-else :src="this.picture" alt="" />
     </div>
     <div class="info">
-      <div>
-        <p class="name">{{ data.name }}</p>
-        <p class="category">{{ data.categories[0] }}</p>
+      <div class="row">
+        <div class="col col-9">
+          <p class="name">{{ product.name }}</p>
+          <p class="category">{{ product.categories[0] }}</p>
+  
+        </div>
+        <div class="col col-3">
+          <button @click="edit = true" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square fa-lg"></i>
 
+          </button>
+        </div>
+      </div>  
+
+
+      <p class="description">{{ product.description }}</p>
+
+      <p class="price">{{ product.price }} $</p>
+
+      <div class="settings">
+        <i v-if="product.delivery" class="fa-solid fa-truck fa-lg"></i>
+        <i v-if="!product.public" class="fa-solid fa-lock fa-lg"></i>
       </div>
-
-      <p class="price">{{ data.price }} $</p>
 
     </div>
   </div>
 </template>
 
 <script>
-import { useStore } from 'vuex';
+import EditProductOverlay from "./EditProductOverlay.vue"
+import { reactive } from 'vue';
+import { supabase } from '../supabase';
 
 export default {
   name: 'ProductTile',
   props: ['data'],
-  setup() {
-    const store = useStore();
-
+  components: { EditProductOverlay },
+  data() {
     return {
-      store,
+      edit: false,
+      picture: null
     };
   },
+  setup() {
+    var product = reactive({
+      id: null,
+      name: '',
+      description: '',
+      categories: [],
+      price: '',
+      imageBefore: null, 
+      image: null, 
+      delivery: true,
+      public: true,
+    });
+
+    return {
+      product,
+    };
+  },
+  async mounted() {
+    if(this.data != null) {
+      this.product.id = this.data.id;
+      this.product.name = this.data.name;
+      this.product.categories = this.data.categories;
+      this.product.description = this.data.info;
+      this.product.price = this.data.price;
+      this.product.delivery = this.data.delivery;
+      this.product.public = this.data.public;
+
+      if (this.data.product_picture != null) {
+        const response = await supabase.storage
+          .from('public/products-pictures')
+          .download(this.data.product_picture);
+        if (response.data != null) {
+          this.product.image = await response.data.text();
+          this.product.initialImage = this.product.image
+          this.picture = this.product.image
+        } 
+        if (response.error) console.warn(response.error);
+      }
+    }
+  },
+  methods: {
+    stopEditingProduct(productData) {
+      this.product = productData;
+      this.picture = productData.image;
+      this.edit = false;
+    }
+  }
 };
 </script>
 
@@ -47,21 +114,28 @@ export default {
 
 .btn {
   position: absolute;
-  bottom: 8px;
+  top: 15px;
   right: 10px;
-  padding: 3px 11px 3px 9px;
+  padding: 2px 5px 3px 5px;
 }
 
 .name {
   text-align: left;
-  margin: 10px 0 0 15px;
+  margin: 10px 15px 0 15px;
 }
 
-.company_name {
+.description {
   text-align: left;
-  margin-left: 15px;
-  font-weight: 300;
+  margin: 10px 15px 0 15px;
+  font-size: 0.9rem;
+  line-height: 1.0rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 
 .price {
   position: absolute;
@@ -71,10 +145,13 @@ export default {
   color: black;
 }
 
-.row {
+.settings {
   position: absolute;
-  width: 100%;
-  bottom: 0;
+  text-align: left;
+  bottom: 8px;
+  right: 15px;
+  color: black;
+  padding: 3px;
 }
 
 .row,
@@ -128,7 +205,7 @@ img {
   text-align: left;
   margin-top: -10px;
   font-weight: 300;
-  margin: -10px 0 0 15px;
+  margin: -10px 15px 0 15px;
 }
 
 .btn-primary {

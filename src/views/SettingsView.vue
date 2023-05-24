@@ -302,7 +302,6 @@ export default {
       category: 'Kategorie',
       description: '',
       employees: [''],
-      abo: '',
       image: null, 
       unchangedImage: null
     });
@@ -572,6 +571,9 @@ export default {
         var categoryInput = document.getElementById('company-category');
         var descriptionInput = document.getElementById('company-info');
 
+        console.log(this.companyData)
+        console.log(this.form)
+
         const { data, error } = await supabase
           .from('companies')
           .update({
@@ -583,6 +585,9 @@ export default {
           })
           .eq('id', this.companyData.id)
           .select();
+
+        console.log(data)
+        console.log(error)
 
         if (error) throw error;
 
@@ -613,8 +618,6 @@ export default {
               if (error) throw error;
           }
         }
-
-        this.store.commit('setUserCompany', data[0]);
 
         this.successAlertTitle = '';
         this.store.commit('setState', 'success');

@@ -3,9 +3,9 @@
   <div v-if="products.length > 0">
     <div class="list">
       <div v-for="ssItem in products" v-bind:key="ssItem.id">
-        <ProductTile :data="ssItem" class="item"></ProductTile>
+        <ProductTile :data="ssItem"></ProductTile>
       </div>
-      <div v-for="index in 2" :key="index" class="item"></div>
+      <div v-for="index in 2" :key="index"></div>
     </div>
 
   </div>
@@ -47,7 +47,7 @@ export default {
       .eq('company_id', this.companyData.id);
 
     if (error) throw error;
-    this.products = data;
+    this.products = data.sort((a, b) => a.name.localeCompare(b.name));
   },
 };
 </script>
@@ -56,6 +56,6 @@ export default {
 .list {
   margin: 0 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 </style>
