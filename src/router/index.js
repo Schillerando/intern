@@ -8,6 +8,7 @@ import AccountingView from '../views/AccountingView';
 import AGBView from '../views/AGBView';
 import UpdateAboView from '../views/UpdateAboView';
 import store from '../store/index';
+import { supabase } from '../supabase';
 
 const routes = [
   {
@@ -88,13 +89,20 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  if(to.query.ext == 'true') await new Promise((resolve) => setTimeout(resolve, 500));
+  if (to.query.ext == 'true') {
+    const { data } = await supabase.auth.setSession({
+      access_token: to.query.access_token,
+      refresh_token: to.query.refresh_token,
+    })
+    store.commit('setUser', data.user);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 
   // get current user info
   const user = store.getters.getUser;
   var userCompany = store.getters.getUserCompany;
 
-  if(userCompany == null) {
+  if (userCompany == null) {
     new Promise((resolve) => setTimeout(resolve, 500));
     userCompany = store.getters.getUserCompany;
   }
@@ -102,18 +110,18 @@ router.beforeEach(async (to, from, next) => {
   console.log(user);
   console.log(userCompany);
 
-  if((to.meta.auth || to.meta.company) && user == null) {
-    window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=ext_'+to.path)
+  if ((to.meta.auth || to.meta.company) && user == null) {
+    window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=ext_' + to.path)
     next();
   }
-  else if(to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) {
+  else if (to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) {
     window.location.replace(process.env.VUE_APP_MAIN_URL + '/account')
     next();
-  } 
-  else if(to.meta.company && userCompany == null && user != null) next({ path: 'companyRegistration' });
-  else if(to.meta.company == false && userCompany != null) next({ path: from.path })
-  else if(to.meta.auth == false && user != null) next({ path: from.path })
-  else if(to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
+  }
+  else if (to.meta.company && userCompany == null && user != null) next({ path: 'companyRegistration' });
+  else if (to.meta.company == false && userCompany != null) next({ path: from.path })
+  else if (to.meta.auth == false && user != null) next({ path: from.path })
+  else if (to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
   else next();
 });
 
