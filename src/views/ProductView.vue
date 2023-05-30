@@ -61,9 +61,8 @@ export default {
     deleteProduct(productData) {
       this.newProduct = false;
 
-      this.products = this.products.filter(function (product) {
-        product.id != productData.id
-      })
+      var index = this.products.findIndex(item => item.id == productData.id)
+      this.products.splice(index, 1)
 
       this.store.dispatch('deleteProduct', productData)
     }, 

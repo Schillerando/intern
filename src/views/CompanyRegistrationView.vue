@@ -576,9 +576,8 @@ export default {
       if(productData == null) {
         this.newProduct = false;
       } else {
-        this.form.products = this.form.products.filter(function(product) {
-          return product.id != productData.id;
-        })
+        var index = this.form.products.findIndex(item => item.id == productData.id)
+        this.form.products.splice(index, 1)
       }
     },
     chooseAbo(abo) {

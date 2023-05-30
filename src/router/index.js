@@ -89,7 +89,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  if (to.query.ext == 'true') {
+  if (to.query.ext == 'true' && to.query.access_token != null) {
     const { data } = await supabase.auth.setSession({
       access_token: to.query.access_token,
       refresh_token: to.query.refresh_token,
@@ -119,7 +119,7 @@ router.beforeEach(async (to, from, next) => {
     next();
   }
   else if (to.meta.company && userCompany == null && user != null) next({ path: 'companyRegistration' });
-  else if (to.meta.company == false && userCompany != null) next({ path: from.path })
+  else if (to.meta.company == false && userCompany != null) next({ path: 'einstellungen' })
   else if (to.meta.auth == false && user != null) next({ path: from.path })
   else if (to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
   else next();

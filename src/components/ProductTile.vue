@@ -64,6 +64,7 @@ export default {
       image: null, 
       delivery: true,
       public: true,
+      product_picture: ''
     });
 
     return {
@@ -71,8 +72,6 @@ export default {
     };
   },
   async mounted() {
-    console.log(this.data.product_picture)
-
     if(this.data != null) {
       this.product.id = this.data.id;
       this.product.name = this.data.name;
@@ -81,6 +80,7 @@ export default {
       this.product.price = this.data.price;
       this.product.delivery = this.data.delivery;
       this.product.public = this.data.public;
+      this.product.product_picture = this.data.product_picture;
 
       if(this.registration) {
         this.product.image = this.data.image
@@ -97,6 +97,10 @@ export default {
           this.picture = this.product.image
         } 
         if (response.error) console.warn(response.error);
+      } else if (this.data.image != null ) {
+        this.product.image = this.data.image;
+        this.product.imageBefore = this.data.image
+        this.picture = this.data.image
       }
     }
   },

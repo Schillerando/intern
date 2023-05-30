@@ -184,6 +184,7 @@ export default {
       image: null, 
       delivery: true,
       public: true,
+      product_picture: ''
     });
 
     var initialProduct = reactive({
@@ -196,6 +197,7 @@ export default {
       image: null, 
       delivery: true,
       public: true,
+      product_picture: ''
     });
 
     const store = useStore();
@@ -217,6 +219,7 @@ export default {
       this.product.image = this.data.image;
       this.product.delivery = this.data.delivery;
       this.product.public = this.data.public;
+      this.product.product_picture = this.data.product_picture;
 
       this.initialProduct.id = this.data.id;
       this.initialProduct.name = this.data.name;
@@ -227,6 +230,7 @@ export default {
       this.initialProduct.image = this.data.image;
       this.initialProduct.delivery = this.data.delivery;
       this.initialProduct.public = this.data.public;
+      this.initialProduct.product_picture = this.data.product_picture;
     } else {
       this.product.id = uuidv4();
       this.initialProduct.id = this.product.id;
@@ -304,6 +308,7 @@ export default {
           this.product.price = newProduct.price;
           this.product.delivery = newProduct.delivery;
           this.product.public = newProduct.public;
+          this.product.product_picture = newProduct.product_picture;
 
           if (newProduct.product_picture != null) {
             const response = await supabase.storage
