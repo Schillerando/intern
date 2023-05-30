@@ -1,6 +1,7 @@
 <template>
   <div>
     <AlertPopup :title="this.alertTitle" :info="this.alertInfo" />
+    <EditProductOverlay v-if="newProduct" :registration="true" @stopEditingProduct="stopEditingProduct($event)" @deleteProduct="deleteProduct()"/>
 
     <div class="container">
       <div class="row justify-content-center">
@@ -108,7 +109,7 @@
                         style="resize: none"
                         rows="5"
                         cols="50"
-                        :value="form.description"
+                        :value="form.info"
                       ></textarea>
                     </div>
                   </form>
@@ -168,36 +169,11 @@
               <div v-else-if="this.page == 2">
                 <h4>Produkte hinzufügen</h4>
 
-                <div
-                  class="product"
-                  v-for="product in this.form.products"
-                  :key="product"
-                >
-                  <div class="card d-flex mb-3">
-                    <div>
-                      {{ product.name }}
-                    </div>
-                    <div>
-                      {{ product.description }}
-                    </div>
-                    <div>
-                      {{ product.price }}
-                    </div>
-                    <div>
-                      <button
-                        type="button"
-                        class="btn-close btn-edit"
-                        aria-label="Edit"
-                      ></button>
-                    </div>
-                    <div>
-                      <button
-                        type="button"
-                        class="btn-close"
-                        aria-label="Close"
-                      ></button>
-                    </div>
+                <div class="list">
+                  <div v-for="ssItem in form.products" v-bind:key="ssItem.id">
+                    <ProductTile :data="ssItem" :registration="true" @deleteProduct="deleteProduct($event)" @editProduct="editProduct($event)"></ProductTile>
                   </div>
+                  <div v-for="index in 2" :key="index"></div>
                 </div>
 
                 <button
@@ -362,15 +338,7 @@
                     @click="this.page--"
                     class="btn btn-secondary"
                   >
-                    <div class="loading-button">Zurück</div>
-                    <div class="spinner">
-                      <span
-                        class="spinner-border spinner-border-sm"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="sr-only">Loading...</span>
-                    </div>
+                    <div>Zurück</div>
                   </button>
                 </div>
   
@@ -458,13 +426,17 @@ import CompanyBadge from '../components/CompanyBadge'
 import AlertPopup from '../components/AlertPopup.vue';
 import AGB from '../components/AGB.vue';
 import { supabase } from '@/supabase';
+import EditProductOverlay from "../components/EditProductOverlay.vue"
+import ProductTile from '../components/ProductTile';
 
 export default {
   name: 'CompanyRegistrationView',
   components: {
     AlertPopup,
     CompanyBadge,
-    AGB
+    AGB,
+    EditProductOverlay,
+    ProductTile
   },
   data() {
     return {
@@ -477,6 +449,7 @@ export default {
       successAlertInfo: 'Aktion wurde erfolgreich durchgeführt',
       failureAlertTitle: 'Fehler',
       failureAlertInfo: 'Es ist ein Fehler aufgetreten!',
+      newProduct: false,
     };
   },
   computed: {
@@ -547,18 +520,10 @@ export default {
       name: '',
       location: '',
       category: 'Kategorie',
-      description: '',
+      info: '',
       employees: [''],
       products: [],
       abo: null,
-      image: null
-    });
-
-    const product = reactive({
-      name: '',
-      description: '',
-      categories: [],
-      price: '',
     });
 
     const store = useStore();
@@ -566,7 +531,6 @@ export default {
     return {
       store,
       form,
-      product,
     };
   },
   methods: {
@@ -596,12 +560,26 @@ export default {
       this.form.employees.push('');
     },
     addProduct() {
-      this.form.products.push({
-        name: 'Cola',
-        description: 'Eine normale Cola',
-        category: 'Getränk',
-        price: 25,
-      });
+      this.newProduct = true;
+    },
+    editProduct(productData) {
+      const index = this.form.products.map(function(product) { return product.id;}).indexOf(productData.id);
+      this.form.products[index] = productData;
+    },
+    stopEditingProduct(productData) {
+      if(productData != null && productData.name != '') {
+        this.form.products.push(productData);
+      }
+      this.newProduct = false;
+    },
+    deleteProduct(productData) {
+      if(productData == null) {
+        this.newProduct = false;
+      } else {
+        this.form.products = this.form.products.filter(function(product) {
+          return product.id != productData.id;
+        })
+      }
     },
     chooseAbo(abo) {
       this.form.abo = abo;
@@ -625,7 +603,7 @@ export default {
 
         this.form.name = nameInput.value;
         this.form.location = locationInput.value;
-        this.form.description = descriptionInput.value;
+        this.form.info = descriptionInput.value;
         this.form.category = categoryInput.value;
       }
 
@@ -706,7 +684,7 @@ export default {
 
           this.form.name = nameInput.value;
           this.form.location = locationInput.value;
-          this.form.description = descriptionInput.value;
+          this.form.info = descriptionInput.value;
           this.form.category = categoryInput.value;
 
           this.continuePressed = false;
@@ -972,5 +950,11 @@ img {
 
 .card-footer {
   background-color: white;
+}
+
+.list {
+  margin: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 </style>

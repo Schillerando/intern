@@ -167,7 +167,7 @@ const store = createStore({
           name: form.name,
           categories: [form.category],
           location: form.location,
-          info: form.description,
+          info: form.info,
           user_uid: this.getters.getUser.id,
           employees: uniqueEmployees,
           abo: form.abo,
@@ -176,6 +176,8 @@ const store = createStore({
         .select();
 
         if (error) throw error;
+
+        commit('setUserCompany', data[0])
 
         if (form.image != null) {
           var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
@@ -199,7 +201,7 @@ const store = createStore({
             const { error } = await supabase
               .from('companies')
               .update({ header_picture: fileName })
-              .eq('id', data[0].id)
+              .eq('id', this.getters.getUserCompany.id)
 
               if (error) throw error;
           }
@@ -222,15 +224,45 @@ const store = createStore({
             .from('products')
             .insert({
               name: product.name,
-              info: product.description,
+              info: product.info,
               price: product.price,
               categories: product.categories,
-              company_id: data[0].id,
+              company_id: this.getters.getUserCompany.id,
               auth_uid: this.getters.getUser.id,
+              delivery: product.delivery,
+              public: product.public
             })
             .select();
 
           if (error) throw error;
+
+          if (product.image != null) {
+            var imageType = product.image.substring(product.image.indexOf(':'), product.image.indexOf(';')).replace(':', '')
+            var imageName = data[0].id + '.' + type.split('/')[1]
+  
+            {
+              const { error } = await supabase
+                .storage
+                .from('products-pictures')
+                .upload(imageName, product.image, {
+                  cacheControl: '3600',
+                  upsert: true,
+                  contentType: imageType
+                })
+  
+              if (error) throw error;
+  
+            }
+  
+            {
+              const { error } = await supabase
+                .from('products')
+                .update({ product_picture: imageName })
+                .eq('id', data[0].id)
+  
+                if (error) throw error;
+            }
+          }
 
         }
 
@@ -266,13 +298,72 @@ const store = createStore({
         console.log(error.error_description || error.message);
       }
     },
+    async addProduct({ commit }, product) {
+      try {
+        commit('setState', 'loading');
+
+        const { data, error } = await supabase.from('products').insert({
+          name: product.name,
+          info: product.info,
+          categories: product.categories,
+          price: product.price,
+          delivery: product.delivery,
+          public: product.public, 
+          auth_uid: this.getters.getUser.id,
+          company_id: this.getters.getUserCompany.id
+        })
+        .select()
+
+        if (error) throw error;
+
+        commit('setCurrentProduct', data[0])
+
+        if (product.image != null) {
+
+          var type = product.image.substring(product.image.indexOf(':'), product.image.indexOf(';')).replace(':', '')
+          var fileName = data[0].id + '.' + type.split('/')[1]
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('products-pictures')
+              .upload(fileName, product.image, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: type
+              })
+
+            if (error) throw error;
+
+          }
+
+          {
+            const { data, error } = await supabase
+              .from('products')
+              .update({ product_picture: fileName })
+              .eq('id', this.getters.getCurrentProduct.id)
+              .select()
+
+            if (error) throw error;
+
+            commit('setCurrentProduct', data[0])
+          }
+        }
+
+        commit('setState', 'success');
+      } catch (error) {
+        commit('setCurrentProduct', null)
+        commit('setState', 'failure');
+        console.log(error.error_description || error.message);
+      }
+    },
     async updateProduct({ commit }, product) {
       try {
         commit('setState', 'loading');
 
         const { data, error } = await supabase.from('products').update({
           name: product.name,
-          info: product.description,
+          info: product.info,
           categories: product.categories,
           price: product.price,
           delivery: product.delivery,
@@ -286,6 +377,15 @@ const store = createStore({
         commit('setCurrentProduct', data[0])
 
         if (product.image != null && product.imageBefore != product.image) {
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('products-pictures')
+              .remove(data[0].product_picture)
+
+            if (error) throw error;
+          }
 
           var type = product.image.substring(product.image.indexOf(':'), product.image.indexOf(';')).replace(':', '')
           var fileName = product.id + '.' + type.split('/')[1]
@@ -320,6 +420,34 @@ const store = createStore({
         commit('setState', 'success');
       } catch (error) {
         commit('setCurrentProduct', null)
+        commit('setState', 'failure');
+        console.log(error.error_description || error.message);
+      }
+    },
+    async deleteProduct({ commit }, product) {
+      try {
+        commit('setState', 'loading');
+
+        if (product.product_picture != null) {
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('products-pictures')
+              .remove([product.product_picture])
+
+            if (error) throw error;
+          }
+        }
+
+        const { error } = await supabase.from('products')
+          .delete()
+          .eq('id', product.id)
+
+        if (error) throw error;
+
+        commit('setState', 'success');
+      } catch (error) {
         commit('setState', 'failure');
         console.log(error.error_description || error.message);
       }

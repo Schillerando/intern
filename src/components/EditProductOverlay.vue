@@ -109,7 +109,7 @@
               style="resize: none"
               rows="5"
               cols="50"
-              :value="product.description"
+              :value="product.info"
             ></textarea>
           </div>
 
@@ -130,6 +130,16 @@
       </div>
       <div class="card-footer">
         <button class="btn btn-primary save-button" @click="validateProduct(true)">Speichern</button>
+        <button v-if="!this.delete && initialProduct.name != ''" class="btn btn-danger delete-button" @click="this.delete = true">Löschen</button>
+        <div v-else-if="this.delete && initialProduct.name != ''" class="confirm">
+          <button class="btn btn-primary confirm-button" @click="deleteProduct()">
+            <i class="fa-solid fa-check fa-lg"></i>
+          </button>
+          <button class="btn btn-danger confirm-button" @click="this.delete = false">
+            <i class="fa-solid fa-xmark fa-lg"></i>
+          </button>
+        </div>
+        
       </div>
     </div>
   </div>
@@ -141,15 +151,16 @@ import { useStore, mapGetters } from 'vuex';
 import AlertPopup from '../components/AlertPopup.vue';
 import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
 import { supabase } from '../supabase';
+import {v4 as uuidv4} from 'uuid';
 
 
 export default {
   name: 'EditProductOverlay',
-  props: ['data', 'edit'],
+  props: ['data', 'edit', 'registration'],
   components: {
     AlertPopup,
   },
-  emits: ['stopEditingProduct'],
+  emits: ['stopEditingProduct', 'deleteProduct'],
   data() {
     return {
       continuePressed: false,
@@ -159,13 +170,14 @@ export default {
       successAlertInfo: 'Aktion wurde erfolgreich durchgeführt',
       failureAlertTitle: 'Fehler',
       failureAlertInfo: 'Es ist ein Fehler aufgetreten!',
+      delete: false
     }
   },
   setup() {
     var product = reactive({
       id: null,
       name: '',
-      description: '',
+      info: '',
       categories: [],
       price: '',
       imageBefore: null, 
@@ -177,7 +189,7 @@ export default {
     var initialProduct = reactive({
       id: null,
       name: '',
-      description: '',
+      info: '',
       categories: [],
       price: '',
       imageBefore: null, 
@@ -199,7 +211,7 @@ export default {
       this.product.id = this.data.id;
       this.product.name = this.data.name;
       this.product.categories = this.data.categories;
-      this.product.description = this.data.description;
+      this.product.info = this.data.info;
       this.product.price = this.data.price;
       this.product.imageBefore = this.data.image;
       this.product.image = this.data.image;
@@ -209,12 +221,15 @@ export default {
       this.initialProduct.id = this.data.id;
       this.initialProduct.name = this.data.name;
       this.initialProduct.categories = this.data.categories;
-      this.initialProduct.description = this.data.info;
+      this.initialProduct.info = this.data.info;
       this.initialProduct.price = this.data.price;
       this.initialProduct.imageBefore = this.data.image;
       this.initialProduct.image = this.data.image;
       this.initialProduct.delivery = this.data.delivery;
       this.initialProduct.public = this.data.public;
+    } else {
+      this.product.id = uuidv4();
+      this.initialProduct.id = this.product.id;
     }
   },
   computed: {
@@ -278,26 +293,31 @@ export default {
   },
   methods: {
     async stopEditingProduct() {
-      const newProduct = this.store.getters.getCurrentProduct 
-      if(newProduct != null) {
-        this.product.id = newProduct.id;
-        this.product.name = newProduct.name;
-        this.product.categories = newProduct.categories;
-        this.product.description = newProduct.info;
-        this.product.price = newProduct.price;
-        this.product.delivery = newProduct.delivery;
-        this.product.public = newProduct.public;
+      if(!this.registration) {
+        const newProduct = this.store.getters.getCurrentProduct 
+        this.store.commit('setCurrentProduct', null)
+        if(newProduct != null) {
+          this.product.id = newProduct.id;
+          this.product.name = newProduct.name;
+          this.product.categories = newProduct.categories;
+          this.product.info = newProduct.info;
+          this.product.price = newProduct.price;
+          this.product.delivery = newProduct.delivery;
+          this.product.public = newProduct.public;
 
-        if (newProduct.product_picture != null) {
-          const response = await supabase.storage
-            .from('public/products-pictures')
-            .download(newProduct.product_picture);
-          if (response.data != null) {
-            this.product.image = await response.data.text();
-            this.product.initialImage = this.product.image
-          } 
-          if (response.error) console.warn(response.error);
-      }
+          if (newProduct.product_picture != null) {
+            const response = await supabase.storage
+              .from('public/products-pictures')
+              .download(newProduct.product_picture);
+            if (response.data != null) {
+              this.product.image = await response.data.text();
+              this.product.initialImage = this.product.image
+            } 
+            if (response.error) console.warn(response.error);
+          }
+        } else {
+          this.product = null;
+        }
       }
 
       this.$emit('stopEditingProduct', this.product)
@@ -305,16 +325,13 @@ export default {
     switchDelivery() {
       this.product.delivery = !this.product.delivery
       this.product.public = this.product.delivery ? true : this.product.public
-
-      console.log(this.product.delivery)
-      console.log(this.product.public)
     },
     switchPrivate() {
       this.product.public = !this.product.public
       this.product.delivery = this.product.public ? this.product.delivery : false
-
-      console.log(this.product.delivery)
-      console.log(this.product.public)
+    },
+    deleteProduct() {
+      this.$emit('deleteProduct', this.product)
     },
     imageInput() {
       var input = document.getElementById('formFile');
@@ -338,7 +355,7 @@ export default {
 
       this.product.name = nameInput.value;
       this.product.price = priceInput.value;
-      this.product.description = descriptionInput.value;
+      this.product.info = descriptionInput.value;
       this.product.categories = [categoryInput.value];
 
       if (!pressed && !this.continuePressed) return;
@@ -397,7 +414,16 @@ export default {
           this.failureAlertInfo = 'Beim Aktualisieren des Produkts ist ein Fehler aufgetreten. Versuche es später erneut.'
           this.successAlertTitle = ''
 
-          this.store.dispatch('updateProduct', this.product)
+          if(this.registration) {
+            this.stopEditingProduct()
+          } else {
+            if(this.initialProduct.name == '') {
+              this.store.dispatch('addProduct', this.product)
+            } else {
+              this.store.dispatch('updateProduct', this.product)
+            }
+          }
+
         }
       }
     }
@@ -434,9 +460,7 @@ export default {
 }
 
 .card-footer {
-  display: flex;
-  justify-content: flex-end;
-  height: 67px;
+  padding-bottom: 45px;
 }
 
 .card-title {
@@ -457,6 +481,24 @@ export default {
   bottom: 7px;
   right: 12px;
   padding: 5px 13px 5px 11px;
+}
+
+.delete-button {
+  font-size: 1.1rem;
+  position: absolute;
+  bottom: 7px;
+  left: 12px;
+  padding: 5px 13px 5px 11px;
+}
+
+.confirm {
+  position: absolute;
+  bottom: 7px;
+  left: 12px;
+}
+
+.confirm-button {
+  margin-right: 10px;
 }
 
 .image {

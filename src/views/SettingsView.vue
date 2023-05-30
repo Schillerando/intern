@@ -300,7 +300,7 @@ export default {
       name: '',
       location: '',
       category: 'Kategorie',
-      description: '',
+      info: '',
       employees: [''],
       image: null, 
       unchangedImage: null
@@ -509,7 +509,7 @@ export default {
             this.form.name = nameInput.value;
             this.form.location = locationInput.value;
             this.form.category = categoryInput.value;
-            this.form.description = descriptionInput.value;
+            this.form.info = descriptionInput.value;
 
             this.failureAlertTitle = 'Name schon vergeben';
             this.failureAlertInfo =
@@ -522,7 +522,7 @@ export default {
 
         this.form.name = nameInput.value;
         this.form.location = locationInput.value;
-        this.form.description = descriptionInput.value;
+        this.form.info = descriptionInput.value;
         this.form.category = categoryInput.value;
 
         this.saveCompany();
@@ -581,7 +581,7 @@ export default {
             name: this.form.name,
             categories: [this.form.category],
             location: this.form.location,
-            info: this.form.description,
+            info: this.form.info,
           })
           .eq('id', this.companyData.id)
           .select();
@@ -592,6 +592,16 @@ export default {
         if (error) throw error;
 
         if (this.form.image != null && this.form.image != this.form.unchangedImage) {
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('sellers-headings')
+              .remove([data[0].header_picture])
+
+            if (error) throw error;
+          }
+
           var type = this.form.image.substring(this.form.image.indexOf(':'), this.form.image.indexOf(';')).replace(':', '')
           var fileName = data[0].id + '.' + type.split('/')[1]
 

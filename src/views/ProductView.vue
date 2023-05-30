@@ -1,9 +1,14 @@
 <template>
+  <EditProductOverlay v-if="newProduct" :registration="false" @stopEditingProduct="stopEditingProduct($event)" @deleteProduct="deleteProduct()"/>
+
   <TitleDiv title="Produkte" />
+  <button class="btn btn-primary mb-4 add-product" @click="addProduct()">
+    Produkt hinzufügen
+  </button>
   <div v-if="products.length > 0">
     <div class="list">
       <div v-for="ssItem in products" v-bind:key="ssItem.id">
-        <ProductTile :data="ssItem"></ProductTile>
+        <ProductTile :data="ssItem" @deleteProduct="deleteProduct($event)"></ProductTile>
       </div>
       <div v-for="index in 2" :key="index"></div>
     </div>
@@ -16,6 +21,7 @@
 import { supabase } from '@/supabase';
 import TitleDiv from '../components/TitleDiv';
 import ProductTile from '../components/ProductTile';
+import EditProductOverlay from '../components/EditProductOverlay';
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 
@@ -23,7 +29,8 @@ export default {
   name: 'ProductView',
   components: {
     TitleDiv,
-    ProductTile
+    ProductTile,
+    EditProductOverlay
   },
   setup() {
     const store = useStore();
@@ -38,6 +45,7 @@ export default {
   data() {
     return {
       products: [],
+      newProduct: false
     };
   },
   async created() {
@@ -49,6 +57,27 @@ export default {
     if (error) throw error;
     this.products = data.sort((a, b) => a.name.localeCompare(b.name));
   },
+  methods: {
+    deleteProduct(productData) {
+      this.newProduct = false;
+
+      this.products = this.products.filter(function (product) {
+        product.id != productData.id
+      })
+
+      this.store.dispatch('deleteProduct', productData)
+    }, 
+    stopEditingProduct(productData) {
+      this.newProduct = false;
+
+      if(productData != null) {
+        this.products.push(productData);
+      }
+    },
+    addProduct() {
+      this.newProduct = true;
+    }
+  }
 };
 </script>
 
@@ -57,5 +86,9 @@ export default {
   margin: 0 20px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
+.add-product {
+  font-size: 1.25rem;
 }
 </style>

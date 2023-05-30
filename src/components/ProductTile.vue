@@ -1,11 +1,10 @@
 <template>
-  <EditProductOverlay v-if="edit" :data="product" @stopEditingProduct="stopEditingProduct($event)" />
+  <EditProductOverlay v-if="edit" :registration="registration" :data="product" @stopEditingProduct="stopEditingProduct($event)" @deleteProduct="deleteProduct($event)"/>
 
   <div class="card">
     <div class="image">
-      <div v-if="this.product.image == null" class="no-image">
+      <div v-if="this.picture == null" class="no-image">
         <i class="fa-solid fa-image fa-2xl"></i>
-        {{ this.product.image }}
       </div>
       <img v-else :src="this.picture" alt="" />
     </div>
@@ -25,7 +24,7 @@
       </div>  
 
 
-      <p class="description">{{ product.description }}</p>
+      <p class="description">{{ product.info }}</p>
 
       <p class="price">{{ product.price }} $</p>
 
@@ -45,8 +44,9 @@ import { supabase } from '../supabase';
 
 export default {
   name: 'ProductTile',
-  props: ['data'],
+  props: ['data', 'registration'],
   components: { EditProductOverlay },
+  emits: ['deleteProduct', 'editProduct'],
   data() {
     return {
       edit: false,
@@ -57,7 +57,7 @@ export default {
     var product = reactive({
       id: null,
       name: '',
-      description: '',
+      info: '',
       categories: [],
       price: '',
       imageBefore: null, 
@@ -71,22 +71,29 @@ export default {
     };
   },
   async mounted() {
+    console.log(this.data.product_picture)
+
     if(this.data != null) {
       this.product.id = this.data.id;
       this.product.name = this.data.name;
       this.product.categories = this.data.categories;
-      this.product.description = this.data.info;
+      this.product.info = this.data.info;
       this.product.price = this.data.price;
       this.product.delivery = this.data.delivery;
       this.product.public = this.data.public;
 
+      if(this.registration) {
+        this.product.image = this.data.image
+        this.product.imageBefore = this.data.image
+        this.picture = this.data.image
+      } else
       if (this.data.product_picture != null) {
         const response = await supabase.storage
           .from('public/products-pictures')
           .download(this.data.product_picture);
         if (response.data != null) {
           this.product.image = await response.data.text();
-          this.product.initialImage = this.product.image
+          this.product.imageBefore = this.product.image
           this.picture = this.product.image
         } 
         if (response.error) console.warn(response.error);
@@ -95,9 +102,21 @@ export default {
   },
   methods: {
     stopEditingProduct(productData) {
+      this.edit = false;
+
+      if(productData == null) return;
+
       this.product = productData;
       this.picture = productData.image;
+
+      if(this.registration) {
+        this.$emit('editProduct', productData)
+      }
+    },
+    deleteProduct(productData) {
       this.edit = false;
+      
+      this.$emit('deleteProduct', productData)
     }
   }
 };
@@ -198,7 +217,7 @@ img {
   height: 100%;
   top: 0;
   left: 0;
-  object-fit: scale-down;
+  object-fit: cover;
 }
 
 .category {

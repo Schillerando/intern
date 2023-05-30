@@ -1,14 +1,22 @@
 <template>
-  <TitleDiv title="Home" />
+  <HeroSection />
+
+  <FeatureSection />
+
+  <QuestionsCarousel />
 </template>
 
 <script>
-import TitleDiv from '../components/TitleDiv';
+import HeroSection from '../components/HeroSection';
+import QuestionsCarousel from '../components/QuestionsCarousel';
+import FeatureSection from '../components/FeatureSection';
 
 export default {
   name: 'HomeView',
   components: {
-    TitleDiv,
+    HeroSection,
+    QuestionsCarousel,
+    FeatureSection,
   },
   data() {
     return {};
