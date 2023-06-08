@@ -89,6 +89,8 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+
+  
   if (to.query.ext == 'true' && to.query.access_token != null) {
     const { data } = await supabase.auth.setSession({
       access_token: to.query.access_token,

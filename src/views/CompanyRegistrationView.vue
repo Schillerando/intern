@@ -198,112 +198,8 @@
               <div v-else-if="this.page == 3">
                 <h4 class="pt-4">Abo wählen</h4>
 
-                <div class="row abo flex-card">
-                  <div class="col-lg-4">
-                    <div
-                      class="card mb-4 rounded-3 shadow-sm"
-                      :class="{ selected: form.abo == 'Standard' }"
-                      @click="chooseAbo('Standard')"
-                    >
-                      <div class="card-header py-3">
-                        <h4 class="info-title my-0 fw-normal">Standard</h4>
-                      </div>
-                      <div class="card-body">
-                        <ul class="list-unstyled mt-3 mb-4">
-                          <li class="info-text">
-                            <CompanyBadge :verified="true" style="zoom: 80%; margin-right: 5px"/> Schillerando Partner
-                          </li>
-                          <li class="info-text"  style="font-weight: 700;">Kostenlose Buchhaltung</li>
+                <AboOptions :abo="form.abo" @chooseAbo="chooseAbo($event)"></AboOptions>
 
-                          <li class="info-text">Gebührenpflichtige Lieferungen<sup>1</sup></li>
-                          <li class="info-text">Gebührenpflichtige Services</li>
-                          <li class="info-text">-</li>
-                        </ul>
-                      </div>
-                      <div class="card-footer">
-                        <h4 class="mt-2">50$<sup>2</sup></h4>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-4">
-                    <div
-                      class="card mb-4 rounded-3 shadow-sm"
-                      :class="{ selected: form.abo == 'Delivery' }"
-                      @click="chooseAbo('Delivery')"
-                    >
-                      <div class="card-header py-3">
-                        <h4 class="info-title my-0 fw-normal">Delivery</h4>
-                      </div>
-                      <div class="card-body">
-                        <ul class="list-unstyled mt-3 mb-4">
-                          <li class="info-text">
-                            <CompanyBadge :verified="true" style="zoom: 80%; margin-right: 5px"/> Schillerando Partner
-                          </li>
-                          <li class="info-text">Kostenlose Buchhaltung</li>
-                          <li class="info-text"  style="font-weight: 700;">Kostenlose Lieferungen</li>
-                          <li class="info-text">Gebührenpflichtige Services</li>
-                          <li class="info-text">-</li>
-                        </ul>
-                      </div>
-                      <div class="card-footer">
-                        <h4 class="mt-2">100$<sup>2</sup></h4>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-4">
-                    <div
-                      class="card mb-4 rounded-3 shadow-sm"
-                      :class="{ selected: form.abo == 'Business' }"
-                      @click="chooseAbo('Business')"
-                    >
-                      <div class="card-header py-3">
-                        <h4 class="info-title my-0 fw-normal">Business</h4>
-                      </div>
-                      <div class="card-body">
-                        <ul class="list-unstyled mt-3 mb-4">
-                          <li class="info-text">
-                            <CompanyBadge :verified="true" :premium="true" style="zoom: 80%; margin-right: 5px"/> Premium Partner
-                          </li>
-                          <li class="info-text">Kostenlose Buchhaltung</li>
-
-                          <li class="info-text">Kostenlose Lieferungen</li>
-                          <li class="info-text"  style="font-weight: 700;">
-                            Kostenlose Services
-                          </li>
-                          <li class="info-text" style="font-weight: 700;">Bevorzugung</li>
-                        </ul>
-                      </div>
-                      <div class="card-footer">
-                        <h4 class="mt-2">200$<sup>2</sup></h4>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-12" style="margin-bottom: 40px;">
-                    <div
-                      class="card mb-3 rounded-3 shadow-sm"
-                      style="text-align: center"
-                      :class="{ selected: form.abo == null }"
-                      @click="chooseAbo(null)"
-                    >
-                      <div class="card-body">
-                        Später auswählen
-                      </div>
-                    </div>
-                  </div>
-
-                  <p class="note"><sup>1</sup> 10% Lieferkosten pro Bestellung für Unternehmen. Beispiel: Kunde bestellt Cola für 20$ (2€). Schillerando Mitarbeiter geht zu Unternehmen und kauft Cola für 18$ (1.8€). Schillerando Mitarbeiter liefert Cola zum Kunden und bekommt 20$ (2€). Schillerando erhält 2$ (0.20€) Lieferkosten.</p>
-                  <p class="note"><sup>2</sup> $ entspricht der Staatswährung (1$ = 0.1€). Das Geld muss am ersten Tag von SAS bei Schillerando abgegeben werden bzw. wird von einem Schillerando Mitarbeiter eingesammelt.</p>
-
-                  <div
-                    class="alert alert-danger"
-                    id="alert-danger"
-                    role="alert"
-                  >
-                    Bitte wähle ein Abo aus!
-                  </div>
-
-                </div>
               </div>
 
               <!-- 4 -->
@@ -422,7 +318,7 @@
 import { reactive } from 'vue';
 import { useStore, mapGetters } from 'vuex';
 import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
-import CompanyBadge from '../components/CompanyBadge'
+import AboOptions from '../components/AboOptions'
 import AlertPopup from '../components/AlertPopup.vue';
 import AGB from '../components/AGB.vue';
 import { supabase } from '@/supabase';
@@ -433,8 +329,8 @@ export default {
   name: 'CompanyRegistrationView',
   components: {
     AlertPopup,
-    CompanyBadge,
     AGB,
+    AboOptions,
     EditProductOverlay,
     ProductTile
   },
