@@ -97,6 +97,7 @@ router.beforeEach(async (to, from, next) => {
       refresh_token: to.query.refresh_token,
     })
     store.commit('setUser', data.user);
+    store.dispatch('startUserCompanySubscription');
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
