@@ -14,7 +14,156 @@
             Dein Unternehmen wird noch überprüft. Erst nach Bestätigung werden dein Unternehmen und seine Produkte auf schillerando.de zu sehen sein.
           </div>
         </div>
+        
+        <div class="col-lg-8">
+          <div class="card m-1">
+            <div class="card-header">Informationen</div>
+            <div class="card-body">
+              <div class="image">
+                <div v-if="form.image == null" class="no-image">
+                  <i class="fa-solid fa-image fa-2xl"></i>
+                </div>
+                <img
+                  v-else
+                  :src="this.form.image"
+                  alt="Unternehmen Bild"
+                  id="companyImage"
+                />
+              </div>
 
+              <input
+                class="form-control form-control-sm mb-4"
+                type="file"
+                id="formFile"
+                accept="image/*"
+                @change="imageInput()"
+                :disabled="!isCompanyEditing"
+              />
+
+              <form class="needs-validation" novalidate>
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-shop"></i
+                  ></span>
+                  <input
+                    type="text"
+                    id="company-name"
+                    class="form-control"
+                    placeholder="Name"
+                    @input="validateCompanyChange(false)"
+                    :value="companyData.name"
+                    :disabled="!isCompanyEditing"
+                    required
+                  />
+                </div>
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-location-dot"></i
+                  ></span>
+                  <input
+                    type="text"
+                    id="company-location"
+                    class="form-control"
+                    placeholder="Raum, Pausenhof, ..."
+                    @input="validateCompanyChange(false)"
+                    :value="companyData.location"
+                    :disabled="!isCompanyEditing"
+                    required
+                  />
+                </div>
+    
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-list"></i
+                  ></span>
+                  <select
+                    class="form-select"
+                    id="company-category"
+                    aria-label="Default select example"
+                    :value="companyData.categories[0]"
+                    @change="validateCompanyChange(false)"
+                    :disabled="!isCompanyEditing"
+                    required
+                    :color="{ isCompanyEditing: 'red' }"
+                  >
+                    <option selected>Kategorie</option>
+                    <option value="Gastronomie">Gastronomie</option>
+                    <option value="Kultur">Kultur</option>
+                    <option value="Dienstleistung">
+                      Dienstleistung
+                    </option>
+                    <option style="color:red" value="Gastronomie & Dienstleistung">
+                      Gastronomie & Dienstleistung
+                    </option>
+                  </select>
+                </div>
+    
+                <div class="input-group mb-3">
+                  <span class="input-group-text"
+                    ><i class="fa-solid fa-circle-info"></i
+                  ></span>
+                  <textarea
+                    type="text"
+                    id="company-info"
+                    class="form-control"
+                    placeholder="Beschreibung"
+                    required
+                    maxlength="400"
+                    style="resize: none"
+                    rows="5"
+                    cols="50"
+                    @input="validateCompanyChange(false)"
+                    :value="companyData.info"
+                    :disabled="!isCompanyEditing"
+                  ></textarea>
+                </div>
+              </form>
+    
+              <div
+                v-if="!isCompanyEditing"
+                class="py-2"
+                style="width: fit-content"
+              >
+                <button
+                  type="button"
+                  class="btn btn-primary px-2 mx-2"
+                  @click="editCompany()"
+                >
+                  Bearbeiten
+                </button>
+              </div>
+              <div v-else style="display: flex">
+                <div class="py-2 mx-0 edit-buttons">
+                  <button
+                    type="button"
+                    class="btn btn-primary px-2 mx-2"
+                    @click="validateCompanyChange(true)"
+                  >
+                    <div class="loading-button">Speichern</div>
+                    <div class="spinner">
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </button>
+                </div>
+                <div class="py-2 mx-0 edit-buttons">
+                  <button
+                    type="button"
+                    class="btn btn-warning px-2 mx-2"
+                    @click="cancelCompanyChange()"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      
         <div class="col-lg-4">
           <div class="card m-1">
             <div class="card-header">Mitarbeiter</div>
@@ -104,155 +253,6 @@
             </div>
           </div>
         </div>
-        
-        <div class="col-lg-8">
-          <div class="card m-1">
-            <div class="card-header">Informationen</div>
-            <div class="card-body">
-              <div class="image">
-                <div v-if="form.image == null" class="no-image">
-                  <i class="fa-solid fa-image fa-2xl"></i>
-                </div>
-                <img
-                  v-else
-                  :src="this.form.image"
-                  alt="Unternehmen Bild"
-                  id="companyImage"
-                />
-              </div>
-
-              <input
-                class="form-control form-control-sm mb-4"
-                type="file"
-                id="formFile"
-                accept="image/*"
-                @change="imageInput()"
-                :disabled="!isCompanyEditing"
-              />
-
-              <form class="needs-validation" novalidate>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"
-                    ><i class="fa-solid fa-shop"></i
-                  ></span>
-                  <input
-                    type="text"
-                    id="company-name"
-                    class="form-control"
-                    placeholder="Name"
-                    @input="validateCompanyChange(false)"
-                    :value="companyData.name"
-                    :disabled="!isCompanyEditing"
-                    required
-                  />
-                </div>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"
-                    ><i class="fa-solid fa-location-dot"></i
-                  ></span>
-                  <input
-                    type="text"
-                    id="company-location"
-                    class="form-control"
-                    placeholder="Raum, Pausenhof, ..."
-                    @input="validateCompanyChange(false)"
-                    :value="companyData.location"
-                    :disabled="!isCompanyEditing"
-                    required
-                  />
-                </div>
-    
-                <div class="input-group mb-3">
-                  <span class="input-group-text"
-                    ><i class="fa-solid fa-list"></i
-                  ></span>
-                  <select
-                    class="form-select"
-                    id="company-category"
-                    aria-label="Default select example"
-                    :value="companyData.categories[0]"
-                    @change="validateCompanyChange(false)"
-                    :disabled="!isCompanyEditing"
-                    required
-                  >
-                    <option selected>Kategorie</option>
-                    <option value="Gastronomie">Gastronomie</option>
-                    <option value="Kultur">Kultur</option>
-                    <option value="Dienstleistung">
-                      Dienstleistung
-                    </option>
-                    <option value="Gastronomie & Dienstleistung">
-                      Gastronomie & Dienstleistung
-                    </option>
-                  </select>
-                </div>
-    
-                <div class="input-group mb-3">
-                  <span class="input-group-text"
-                    ><i class="fa-solid fa-circle-info"></i
-                  ></span>
-                  <textarea
-                    type="text"
-                    id="company-info"
-                    class="form-control"
-                    placeholder="Beschreibung"
-                    required
-                    maxlength="400"
-                    style="resize: none"
-                    rows="5"
-                    cols="50"
-                    @input="validateCompanyChange(false)"
-                    :value="companyData.info"
-                    :disabled="!isCompanyEditing"
-                  ></textarea>
-                </div>
-              </form>
-    
-              <div
-                v-if="!isCompanyEditing"
-                class="py-2"
-                style="width: fit-content"
-              >
-                <button
-                  type="button"
-                  class="btn btn-primary px-2 mx-2"
-                  @click="editCompany()"
-                >
-                  Bearbeiten
-                </button>
-              </div>
-              <div v-else style="display: flex">
-                <div class="py-2 mx-0 edit-buttons">
-                  <button
-                    type="button"
-                    class="btn btn-primary px-2 mx-2"
-                    @click="validateCompanyChange(true)"
-                  >
-                    <div class="loading-button">Speichern</div>
-                    <div class="spinner">
-                      <span
-                        class="spinner-border spinner-border-sm"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="sr-only">Loading...</span>
-                    </div>
-                  </button>
-                </div>
-                <div class="py-2 mx-0 edit-buttons">
-                  <button
-                    type="button"
-                    class="btn btn-warning px-2 mx-2"
-                    @click="cancelCompanyChange()"
-                  >
-                    Abbrechen
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      
 
       </div>
     </div>
