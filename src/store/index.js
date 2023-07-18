@@ -44,6 +44,7 @@ const store = createStore({
       const { data, error } = await supabase.auth.refreshSession();
 
       var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      isSafari = true;
 
       if (error || data.session == null) {
 
