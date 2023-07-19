@@ -85,7 +85,7 @@
         class="card mb-3 rounded-3 shadow-sm"
         style="text-align: center"
         :class="{ selected: abo == 'Later' }"
-        @click="chooseAbo(null)"
+        @click="chooseAbo('Later')"
       >
         <div class="card-body">
           Später auswählen

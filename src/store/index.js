@@ -297,13 +297,17 @@ const store = createStore({
       try {
         commit('setState', 'loading');
 
-        const { error } = await supabase.from('companies').update({
-          abo: form.abo,
-          relevance: form.abo == 'Business' ? 50 : 100
-        })
-          .eq('id', this.getters.getUserCompany.id);
+        if(form.abo != 'Later') {
+          const { error } = await supabase.from('companies').update({
+            abo: form.abo,
+            relevance: form.abo == 'Business' ? 50 : 100
+          })
+            .eq('id', this.getters.getUserCompany.id);
 
-        if (error) throw error;
+            if (error) throw error;
+
+        }
+
 
         commit('setState', 'success');
 
