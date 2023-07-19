@@ -41,22 +41,28 @@ const store = createStore({
   },
   actions: {
     async reload({ commit }) {
-      const { data, error } = await supabase.auth.refreshSession();
-
       var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
       isSafari = true;
 
-      if (error || data.session == null) {
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
 
-        if(isSafari) {
-          commit('setUser', null);
-          commit('setUserCompany', null);
-        } else this.dispatch('getSharedLogin')
-        
-      } else {
-        commit('setUser', data.user);
-        this.dispatch('startUserCompanySubscription');
+        if (error || data.session == null) {
+
+          if(isSafari) {
+            commit('setUser', null);
+            commit('setUserCompany', null);
+          } else this.dispatch('getSharedLogin')
+          
+        } else {
+          commit('setUser', data.user);
+          this.dispatch('startUserCompanySubscription');
+        }
+      } catch(e) {
+        commit('setUser', null);
+        commit('setUserCompany', null);
       }
+      
 
       if(!isSafari) {
         this.timer = setInterval(() => {
