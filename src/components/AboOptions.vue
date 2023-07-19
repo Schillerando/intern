@@ -84,7 +84,7 @@
       <div
         class="card mb-3 rounded-3 shadow-sm"
         style="text-align: center"
-        :class="{ selected: abo == null }"
+        :class="{ selected: abo == 'Later' }"
         @click="chooseAbo(null)"
       >
         <div class="card-body">

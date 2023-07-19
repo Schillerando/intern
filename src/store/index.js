@@ -185,7 +185,7 @@ const store = createStore({
           info: form.info,
           user_uid: this.getters.getUser.id,
           employees: uniqueEmployees,
-          abo: form.abo,
+          abo: form.abo == 'Later' ? null : form.abo,
           relevance: form.abo == 'Business' ? 50 : 100
         })
         .select();
