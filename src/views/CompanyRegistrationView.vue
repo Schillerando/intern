@@ -834,6 +834,7 @@ img {
   height: 100%;
   object-fit: cover;
   border-radius: 0.375rem;
+  left: 0;
 }
 
 .fa-image {
