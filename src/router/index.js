@@ -7,8 +7,8 @@ import CompanyRegistrationView from '../views/CompanyRegistrationView';
 import AccountingView from '../views/AccountingView';
 import AGBView from '../views/AGBView';
 import UpdateAboView from '../views/UpdateAboView';
-//import store from '../store/index';
-//import { supabase } from '../supabase';
+import store from '../store/index';
+import { supabase } from '../supabase';
 
 const routes = [
   {
@@ -90,7 +90,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
 
-  /*
+
   if (to.query.ext == 'true' && to.query.access_token != null && to.query.access_token != "null") {
     try {
       const { data } = await supabase.auth.setSession({
@@ -135,9 +135,7 @@ router.beforeEach(async (to, from, next) => {
   else if (to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
   else if(to.name == 'CompanyRegistrationView' && userCompany != null) next({ path: 'einstellungen'})
   else next();
-*/
 
-  next();
 });
 
 export default router;

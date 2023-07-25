@@ -336,7 +336,7 @@ export default {
   },
   data() {
     return {
-      page: 2,
+      page: 0,
       continuePressed: false,
       action: '',
       alertTitle: '',
@@ -421,8 +421,6 @@ export default {
       products: [],
       abo: null,
     });
-
-    form.products.push({})
 
     const store = useStore();
 
