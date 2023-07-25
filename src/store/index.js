@@ -41,19 +41,34 @@ const store = createStore({
   },
   actions: {
     async reload({ commit }) {
-      const { data, error } = await supabase.auth.refreshSession();
+      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      isSafari = true;
 
-      if (error || data.session == null) {
-        this.dispatch('getSharedLogin')
-      } else {
-        commit('setUser', data.user);
-        this.dispatch('startUserCompanySubscription');
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
 
+        if (error || data.session == null) {
+
+          if(isSafari) {
+            commit('setUser', null);
+            commit('setUserCompany', null);
+          } else this.dispatch('getSharedLogin')
+          
+        } else {
+          commit('setUser', data.user);
+          this.dispatch('startUserCompanySubscription');
+        }
+      } catch(e) {
+        commit('setUser', null);
+        commit('setUserCompany', null);
       }
+      
 
-      this.timer = setInterval(() => {
-        this.dispatch('getSharedLogin')
-      }, 1000)
+      if(!isSafari) {
+        this.timer = setInterval(() => {
+          this.dispatch('getSharedLogin')
+        }, 1000)
+      }
     },
     
     async getSharedLogin({ commit }) {
@@ -170,7 +185,7 @@ const store = createStore({
           info: form.info,
           user_uid: this.getters.getUser.id,
           employees: uniqueEmployees,
-          abo: form.abo,
+          abo: form.abo == 'Later' ? null : form.abo,
           relevance: form.abo == 'Business' ? 50 : 100
         })
         .select();
@@ -282,13 +297,17 @@ const store = createStore({
       try {
         commit('setState', 'loading');
 
-        const { error } = await supabase.from('companies').update({
-          abo: form.abo,
-          relevance: form.abo == 'Business' ? 50 : 100
-        })
-          .eq('id', this.getters.getUserCompany.id);
+        if(form.abo != 'Later') {
+          const { error } = await supabase.from('companies').update({
+            abo: form.abo,
+            relevance: form.abo == 'Business' ? 50 : 100
+          })
+            .eq('id', this.getters.getUserCompany.id);
 
-        if (error) throw error;
+            if (error) throw error;
+
+        }
+
 
         commit('setState', 'success');
 

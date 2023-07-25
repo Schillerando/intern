@@ -91,12 +91,21 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
 
   
-  if (to.query.ext == 'true' && to.query.access_token != null) {
-    const { data } = await supabase.auth.setSession({
-      access_token: to.query.access_token,
-      refresh_token: to.query.refresh_token,
-    })
-    store.commit('setUser', data.user);
+  if (to.query.ext == 'true' && to.query.access_token != null && to.query.access_token != "null") {
+    try {
+      const { data } = await supabase.auth.setSession({
+        access_token: to.query.access_token,
+        refresh_token: to.query.refresh_token,
+      })
+      store.commit('setUser', data.user);
+      store.dispatch('startUserCompanySubscription');
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } catch(e) {
+      store.commit('setUser', null);
+      store.commit('setUserCompany', null);
+    }
+    
+  } else if(to.query.ext == 'true') {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
@@ -124,6 +133,7 @@ router.beforeEach(async (to, from, next) => {
   else if (to.meta.company == false && userCompany != null) next({ path: 'einstellungen' })
   else if (to.meta.auth == false && user != null) next({ path: from.path })
   else if (to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
+  else if(to.name == 'CompanyRegistrationView' && userCompany != null) next({ path: 'einstellungen'})
   else next();
 });
 
