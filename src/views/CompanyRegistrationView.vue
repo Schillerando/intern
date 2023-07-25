@@ -170,7 +170,7 @@
                 <h4>Produkte hinzufügen</h4>
 
                 <div class="list">
-                  <div v-for="ssItem in form.products" v-bind:key="ssItem.id">
+                  <div v-for="ssItem in form.products" v-bind:key="ssItem.id" class="product-div">
                     <ProductTile :data="ssItem" :registration="true" @deleteProduct="deleteProduct($event)" @editProduct="editProduct($event)"></ProductTile>
                   </div>
                   <div v-for="index in 2" :key="index"></div>
@@ -336,7 +336,7 @@ export default {
   },
   data() {
     return {
-      page: 0,
+      page: 2,
       continuePressed: false,
       action: '',
       alertTitle: '',
@@ -421,6 +421,8 @@ export default {
       products: [],
       abo: null,
     });
+
+    form.products.push({})
 
     const store = useStore();
 
@@ -714,12 +716,43 @@ h3 {
   }
 }
 
+
+@media (max-width: 509px) {
+
+  .list {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .product-div {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 370px) {
+  .product-div {
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 310px) {
+  .product-div {
+    transform: scale(0.7);
+  }
+}
+
+
 .note {
   padding: 0 50px 10px 50px;
   text-align: center;
   font-size: 0.8rem; 
   color: rgb(17, 17, 17);
 }
+
 
 .continue {
   position: absolute;

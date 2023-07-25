@@ -44,9 +44,10 @@ export default {
   },
   data() {
     return {
-      products: [],
+      products: [{}],
       newProduct: false
     };
+
   },
   async created() {
     const { data, error } = await supabase
