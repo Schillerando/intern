@@ -1,39 +1,29 @@
 <template>
-  <EditAccountingEntryOverlay v-if="edit" :data="entry" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry($event)"/>
+  <EditAccountingEntryOverlay v-if="edit" :data="entry" :products="products" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry($event)"/>
 
-  <div class="card">
-    <div class="image">
-      <div v-if="this.picture == null" class="no-image">
-        <i class="fa-solid fa-image fa-2xl"></i>
-      </div>
-      <img v-else :src="this.picture" alt="" />
-    </div>
-    <div class="info">
-      <div class="row">
-        <div class="col col-9">
-          <p class="name">{{ entry.name }}</p>
-          <p class="category">{{ entry.type }}</p>
-  
-        </div>
-        <div class="col col-3">
-          <button @click="edit = true" class="btn btn-primary">
-            <i class="fa-solid fa-pen-to-square fa-lg"></i>
+  <div class="card" @click="edit = true">
+    
 
-          </button>
-        </div>
-      </div>  
+    <p class="name">{{ entry.name }}</p>
+      
+    <p class="price" :class="{ income: entry.amount > 0, expense: entry.amount < 0  }">{{ entry.amount > 0 ? "+" : '' }}{{ entry.amount }} $</p>
 
-      <p class="description">{{ entry.info }}</p>
+    <!--
+    <button @click="edit = true" class="btn btn-primary">
+      <i class="fa-solid fa-pen-to-square fa-lg"></i>
 
-      <p class="price">{{ entry.amount }} $</p>
+    </button>
+    -->
 
-    </div>
   </div>
 </template>
 
 <script>
 import EditAccountingEntryOverlay from "./EditAccountingEntryOverlay.vue"
 import { reactive } from 'vue';
+import { supabase } from '@/supabase';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
 export default {
   name: 'AccountingEntryTile',
@@ -60,37 +50,40 @@ export default {
       bill_picture: ''
     });
 
+    const store = useStore();
+
+    const companyData = computed(() => store.state.userCompany);
+
     return {
       entry,
+      store,
+      companyData
     };
   },
   async mounted() {
-    if(this.entry != null) {
+    if(this.data != null) {
       this.entry.id = this.data.id;
       this.entry.name = this.data.name;
       this.entry.type = this.data.type;
       this.entry.info = this.data.info;
       this.entry.amount = this.data.amount;
-      this.entry.product = this.products.find(product => product.id == this.data.product);
       this.entry.bill_picture = this.data.bill_picture;
 
-      /*
-      if (this.data.product_picture != null) {
+      if (this.data.bill_picture != null) {
         const response = await supabase.storage
-          .from('public/products-pictures')
-          .download(this.data.product_picture);
+          .from('bill-pictures/' + this.store.getters.getUserCompany.id)
+          .download(this.data.bill_picture);
         if (response.data != null) {
-          this.product.image = await response.data.text();
-          this.product.imageBefore = this.product.image
-          this.picture = this.product.image
+          this.entry.image = await response.data.text();
+          this.entry.imageBefore = this.entry.image
+          this.picture = this.entry.image
         } 
         if (response.error) console.warn(response.error);
       } else if (this.data.image != null ) {
-        this.product.image = this.data.image;
-        this.product.imageBefore = this.data.image
+        this.entry.image = this.data.image;
+        this.entry.imageBefore = this.entry.image
         this.picture = this.data.image
       }
-      */
     }
   },
   methods: {
@@ -99,7 +92,7 @@ export default {
 
       if(entryData == null) return;
 
-      this.product = entryData;
+      this.entry = entryData;
       this.picture = entryData.image;
     },
     deleteEntry(entryData) {
@@ -122,44 +115,30 @@ export default {
 
 .btn {
   position: absolute;
-  top: 15px;
   right: 10px;
+  top: 8px;
   padding: 2px 5px 3px 5px;
 }
 
 .name {
   text-align: left;
   margin: 10px 15px 0 15px;
-}
-
-.description {
-  text-align: left;
-  margin: 10px 15px 0 15px;
-  font-size: 0.9rem;
-  line-height: 1.0rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* number of lines to show */
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  max-height: 32px;
+  max-width: calc(100vw*0.9 - 185px);
 }
-
 
 .price {
   position: absolute;
-  text-align: left;
-  bottom: 8px;
-  left: 15px;
-  color: black;
-}
-
-.settings {
-  position: absolute;
-  text-align: left;
+  text-align: right;
   bottom: 8px;
   right: 15px;
   color: black;
-  padding: 3px;
+  font-weight: 400;
 }
 
 .row,
@@ -168,62 +147,15 @@ export default {
   padding: 0;
 }
 
-.info {
-  position: absolute;
-  width: 60%;
-  height: 100%;
-  top: 0;
-  left: 40%;
-}
-
 .card {
   flex-direction: row;
   overflow: hidden;
-  margin: 2.5%;
+  margin: 5px 2.5%;
+  height: 50px;
 }
 
-.image {
-  width: 40%;
-  position: relative;
-  padding-bottom: 40%;
-  margin-right: 10px;
-  border-right: 1px solid;
-  border-color: #cfd4da;
-}
-
-.no-image {
-  background-color: gray;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-}
-
-img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-}
-
-.category {
-  text-align: left;
-  margin-top: -10px;
-  font-weight: 300;
-  margin: -10px 15px 0 15px;
-}
-
-.btn-primary {
-  background-color: #00a100;
-  border-color: #00a100;
-}
-
-.btn-primary:hover {
-  background-color: #007400;
-  border-color: #007400;
+.card:hover {
+  color: #0d6efd;
 }
 
 .fa-image {
@@ -232,6 +164,14 @@ img {
   top: 50%;
   left: calc(50% - 2rem);
   color: black;
+}
+
+.income {
+  color: green;
+}
+
+.expense {
+  color: red;
 }
 
 /*   border-radius: 0.375rem 0 0 0.375rem; */

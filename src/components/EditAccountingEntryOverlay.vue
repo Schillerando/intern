@@ -14,33 +14,7 @@
           ></button>
         </div>
       </div>
-      <div class="card-body scroll">
-        <!--
-        <div class="image">
-          <div v-if="product.image == null" class="no-image">
-            <i class="fa-solid fa-image fa-2xl"></i>
-          </div>
-          <img
-            v-else
-            :src="this.product.image"
-            alt="Unternehmen Bild"
-            id="productImage"
-          />
-        </div>
-
-
-        <input
-          class="form-control form-control-sm col-7"
-          type="file"
-          id="formFile"
-          accept="image/*"
-          @change="imageInput()"
-        />
-        
-
-        <p v-if="product.image == null" style="font-weight: 300; font-size: 0.9rem">Füge ein Bild hinzu, welches dein Produkt repräsentiert. (Optimales Format 1:1)</p>
-        -->
-
+      <div class="card-body scroll mt-4">
         <form class="needs-validation" novalidate>
 
           <div class="input-group mb-3">
@@ -55,22 +29,22 @@
               @change="validateEntry(false)"
               required
             >
-              <option selected>Typ</option>
+              <option value="" selected>Typ</option>
+              <option value="Verkauf+">
+                Verkauf
+              </option>
               <option value="Einkauf-">Einkauf</option>
               <option value="Gehalt-">Gehalt</option>
               <option value="Miete-">Miete</option>
               <option value="Steuern-">Steuern</option>
-              <option value="Sonstige Ausgabe-">Sonstige Ausgabe</option>
-              <option value="Verkauf+">
-                Verkauf
-              </option>
               <option value="Sonstige Einnahme+">
                 Sonstige Einnahme
               </option>
+              <option value="Sonstige Ausgabe-">Sonstige Ausgabe</option>
             </select>
           </div>
 
-          <div v-if="entry.type == 'Verkauf'" class="input-group mb-3">
+          <div v-if="entry.type == 'Verkauf+'" class="input-group mb-3">
             <span class="input-group-text"
               ><i class="fa-solid fa-list"></i
             ></span>
@@ -79,16 +53,16 @@
               id="entry-product"
               aria-label="Default select example"
               :value="entry.product.id"
-              @change="validateEntry(false)"
+              @change="validateEntry(false, true)"
             >
-              <option selected>Produkt</option>
+              <option value="" selected>Produkt</option>
               <option v-for="product in this.products" :key="product.id" :value="product.id">{{ product.name }} | {{ product.price }} $</option>
             </select>
           </div>
 
           <div class="input-group mb-3">
             <span class="input-group-text"
-              ><i class="fa-solid fa-box-open"></i></span>
+              ><i class="fa-solid fa-bookmark"></i></span>
             <input
               type="text"
               id="entry-name"
@@ -102,14 +76,15 @@
 
           <div class="input-group mb-3">
             <span class="input-group-text"
-              ><i class="fa-solid fa-dollar-sign"></i></span>
+              ><i class="fa-solid fa-dollar-sign" :class="{ income: entry.type.includes('+'), expense: entry.type.includes('-') }"></i></span>
             <input
               type="number"
               id="entry-amount"
               class="form-control"
               @input="validateEntry(false)"
               placeholder="Betrag"
-              :value="Math.abs(entry.amount)"
+              :value="Math.abs(entry.amount) == 0 ? '' : Math.abs(entry.amount)"
+              :class="{ income: entry.type.includes('+'), expense: entry.type.includes('-') }"
               required
             />
           </div>
@@ -133,9 +108,25 @@
           </div>
 
           <!-- Zeitpunkt -->
-
-
         </form>
+
+        <p v-if="entry.image == null" style="font-weight: 300; font-size: 0.9rem">Füge einen Kassenzettel, eine Rechnung oder ähnliches hinzu.</p>
+
+        <img
+        v-if="entry.image != null"
+          :src="this.entry.image"
+          alt="Unternehmen Bild"
+          id="productImage"
+        />
+
+        <input
+          class="form-control form-control-sm col-7"
+          type="file"
+          id="formFile"
+          accept="image/*"
+          @change="imageInput()"
+        />
+        
       </div>
       <div class="card-footer">
         <button class="btn btn-primary save-button" @click="validateEntry(true)">Speichern</button>
@@ -160,6 +151,7 @@ import { useStore, mapGetters } from 'vuex';
 import AlertPopup from '../components/AlertPopup.vue';
 import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
 import {v4 as uuidv4} from 'uuid';
+import { supabase } from '@/supabase';
 
 
 export default {
@@ -208,12 +200,24 @@ export default {
       bill_picture: ''
     });
 
+    var product = reactive({
+      id: null,
+      name: '',
+      info: '',
+      categories: [],
+      price: '',
+      delivery: true,
+      public: true,
+      product_picture: ''
+    });
+
     const store = useStore();
 
     return {
       store,
       entry,
-      initialEntry
+      initialEntry,
+      product
     };
   },
   mounted() {
@@ -223,7 +227,11 @@ export default {
       this.entry.type = this.data.type;
       this.entry.info = this.data.info;
       this.entry.amount = this.data.amount;
-      this.entry.product = this.products.find(product => product.id == this.data.product);
+
+      var findProduct = this.products.find(product => product.id == this.data.product);
+      if(findProduct != null) this.entry.product = findProduct;
+      else this.entry.product = this.product;
+      
       this.entry.imageBefore = this.data.image;
       this.entry.image = this.data.image;
       this.entry.bill_picture = this.data.bill_picture;
@@ -233,14 +241,21 @@ export default {
       this.initialEntry.type = this.data.type;
       this.initialEntry.info = this.data.info;
       this.initialEntry.amount = this.data.amount;
-      this.initialEntry.product = this.products.find(product => product.id == this.data.product);
+
+      if(findProduct != null) this.initialEntry.product = findProduct;
+      else this.initialEntry.product = this.product;
+
       this.initialEntry.imageBefore = this.data.image;
       this.initialEntry.image = this.data.image;
       this.initialEntry.bill_picture = this.data.bill_picture;
     } else {
       this.entry.id = uuidv4();
       this.initialEntry.id = this.entry.id;
+      
+      this.entry.product = this.product;
+      this.initialEntry.product = this.product;
     }
+
   },
   computed: {
     ...mapGetters(['getState']),
@@ -314,18 +329,16 @@ export default {
         this.entry.product = newEntry.product;
         this.entry.bill_picture = newEntry.bill_picture;
 
-        /*
-        if (newEntry.product_picture != null) {
+        if (newEntry.bill_picture != null) {
           const response = await supabase.storage
-            .from('public/products-pictures')
-            .download(newEntry.product_picture);
+            .from('bill-pictures/' + this.store.getters.getUserCompany.id)
+            .download(newEntry.bill_picture);
           if (response.data != null) {
-            this.product.image = await response.data.text();
-            this.product.initialImage = this.product.image
+            this.entry.image = await response.data.text();
+            this.entry.initialImage = this.entry.image
           } 
           if (response.error) console.warn(response.error);
         }
-        */
       } else {
         this.entry = null;
       }
@@ -349,19 +362,32 @@ export default {
       }
 
     },
-    async validateEntry(pressed) {
+    async validateEntry(pressed, productChanged) {
       var nameInput = document.getElementById('entry-name');
       var typeInput = document.getElementById('entry-type');
       var amountInput = document.getElementById('entry-amount');
       var infoInput = document.getElementById('entry-info');
-      var productInput = document.getElementById('entry-product');
 
-      this.entry.name = nameInput.value;
+      if(this.entry.type == 'Verkauf+') {
+        var productInput = document.getElementById('entry-product');
+
+        var findProduct = this.products.find(product => product.id == productInput.value);
+        if(findProduct != null) this.entry.product = findProduct;
+        else this.entry.product = this.product;
+
+
+        if(productChanged && this.entry.product.id != null) {
+          this.entry.name = this.entry.product.name;
+          this.entry.amount = this.entry.product.price;
+        }
+      } else {
+        this.entry.name = nameInput.value;
+        this.entry.amount = amountInput.value;
+
+      }
+
       this.entry.type = typeInput.value;
-      this.entry.amount = amountInput.value;
       this.entry.infoInput = infoInput.value;
-
-      this.entry.product = this.products.find(product => product.id == productInput.value);
 
       if (!pressed && !this.continuePressed) return;
 
@@ -493,13 +519,6 @@ export default {
   margin-right: 10px;
 }
 
-.image {
-  width: 60%;
-  position: relative;
-  padding-bottom: 60%;
-  margin: 0 auto 10px auto;
-}
-
 .no-image {
   background-color: gray;
   position: absolute;
@@ -509,12 +528,11 @@ export default {
 }
 
 img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 90%;
+  object-fit: scale-down;
   border-radius: 0.375rem;
-  left: 0;
+  position: relative;
+  margin: 10px auto 10px auto;
 }
 
 .fa-image {
@@ -546,7 +564,23 @@ img {
 }
 
 .fa-circle-info{
-  padding-left: 1px;
+  padding-left: 2px;
+}
+
+.fa-bookmark {
+  padding-left: 4px;
+}
+
+.fa-list {
+  padding-left: 2px;
+}
+
+.income {
+  color: green;
+}
+
+.expense {
+  color: red;
 }
 
 
