@@ -135,6 +135,14 @@ export default {
   font-weight: 600;
 }
 
+.name {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* number of lines to show */
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
 .btn {
   position: absolute;
   top: 15px;
@@ -149,14 +157,13 @@ export default {
 
 .description {
   text-align: left;
-  margin: 10px 15px 0 15px;
+  margin: 5px 15px 0 15px;
   font-size: 0.9rem;
-  line-height: 1.0rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* number of lines to show */
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 
@@ -226,9 +233,8 @@ img {
 
 .category {
   text-align: left;
-  margin-top: -10px;
   font-weight: 300;
-  margin: -10px 15px 0 15px;
+  margin: -5px 15px 0 15px;
 }
 
 .btn-primary {

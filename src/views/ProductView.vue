@@ -5,23 +5,31 @@
   <button class="btn btn-primary mb-4 add-product" @click="addProduct()">
     Produkt hinzufügen
   </button>
-  <div v-if="products.length > 0">
-    <div class="list">
-      <div v-for="ssItem in products" v-bind:key="ssItem.id">
-        <ProductTile :data="ssItem" @deleteProduct="deleteProduct($event)"></ProductTile>
-      </div>
-      <div v-for="index in 2" :key="index"></div>
-    </div>
 
+  <SortableList
+      v-if="products.length > 0"
+      :items="products"
+      :key="key"
+      sort-by-categories="true"
+      element="ProductTile"
+      @deleteProduct="deleteProduct($event)"
+    />
+    <!--
+  <div v-for="ssItem in products" v-bind:key="ssItem.id">
+    <ProductTile :data="ssItem" @deleteProduct="deleteProduct($event)"></ProductTile>
   </div>
+  
+  <div v-for="index in 2" :key="index"></div>
+  -->
 
 </template>
 
 <script>
 import { supabase } from '@/supabase';
 import TitleDiv from '../components/TitleDiv';
-import ProductTile from '../components/ProductTile';
+//import ProductTile from '../components/ProductTile';
 import EditProductOverlay from '../components/EditProductOverlay';
+import SortableList from '@/components/SortableList.vue';
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 
@@ -29,8 +37,9 @@ export default {
   name: 'ProductView',
   components: {
     TitleDiv,
-    ProductTile,
-    EditProductOverlay
+    //ProductTile,
+    EditProductOverlay,
+    SortableList
   },
   setup() {
     const store = useStore();
@@ -45,7 +54,8 @@ export default {
   data() {
     return {
       products: [],
-      newProduct: false
+      newProduct: false, 
+      key: 0
     };
 
   },
@@ -62,16 +72,23 @@ export default {
     deleteProduct(productData) {
       this.newProduct = false;
 
+      console.log('test');
+
       var index = this.products.findIndex(item => item.id == productData.id)
       this.products.splice(index, 1)
+
+      this.key++;
 
       this.store.dispatch('deleteProduct', productData)
     }, 
     stopEditingProduct(productData) {
       this.newProduct = false;
 
+      console.log('test');
+
       if(productData != null) {
         this.products.push(productData);
+        this.key++;
       }
     },
     addProduct() {
