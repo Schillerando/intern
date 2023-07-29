@@ -1,8 +1,8 @@
 <template>
   <div class="row" :class="{ noSearch: noSearch, 'no-margin': element == 'AccountingEntryTile' }">
-    <div :class="{'col-md-3 col-xl-4': element == 'ProductTile' }" class="col-md-2"></div>
+    <div :class="{'col-md-3 col-xl-4': element == 'ProductTile', 'col-md-2': element == 'AccountingEntryTile' }"></div>
     <div v-if="noSearch" class="search-comp col-12 col-md-6 col-xl-4"></div>
-    <div v-else :class="{'col-12 col-md-6 col-xl-4': element == 'ProductTile' }" class="search-comp col-md-8">
+    <div v-else :class="{'col-12 col-md-6 col-xl-4': element == 'ProductTile', 'col-md-8': element == 'AccountingEntryTile'  }">
       <input
         class="search form-control form-control-lg me-2"
         type="search"
@@ -33,10 +33,10 @@
         </div>
       </div>
     </div>
-    <div :class="{'col-md-3 col-xl-4': element == 'ProductTile' }" class="col-md-2"></div>
-    <div :class="{'col-md-3 col-xl-4': element == 'ProductTile' }" class="col-md-2"></div>
+    <div :class="{'col-md-3 col-xl-4': element == 'ProductTile', 'col-md-2': element == 'AccountingEntryTile' }"></div>
+    <div :class="{'col-md-3 col-xl-4': element == 'ProductTile', 'col-md-2': element == 'AccountingEntryTile' }"></div>
 
-    <div :class="{'col-12 col-md-6 col-xl-4': element == 'ProductTile' }" class="col-md-8">
+    <div :class="{'col-12 col-md-6 col-xl-4': element == 'ProductTile', 'col-md-8': element == 'AccountingEntryTile' }">
       <div class="settings">
         <button
           class="direction btn btn-outline-secondary"
@@ -263,6 +263,7 @@ export default {
         for (let i = 0; i < object.length; i++) {
           instances += this.searchForString(string, object[i]);
         }
+
         return instances;
       }
       if (typeof object != 'string') return 0;
@@ -277,7 +278,7 @@ export default {
         let matches = true;
         if (this.searchForString(this.searchString, item) == 0) matches = false;
         
-        if(this.element == "AccountingEntryTile") {
+        else if(this.element == "AccountingEntryTile") {
           
           if(this.chosenCategories.includes(item.type)) {
             matches = true;

@@ -24,7 +24,6 @@
     <div class="col-lg-6">
       <div class="entries">
         <SortableList
-          v-if="entries.length > 0"
           :items="entries"
           :products="products"
           :key="key"

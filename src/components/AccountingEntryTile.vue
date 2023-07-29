@@ -3,6 +3,20 @@
 
   <div class="card" @click="edit = true">
     
+    <div class="type">
+      <span v-if="entry.type == 'Einkauf-'" class="input-group-text"
+        ><i class="fa-solid fa-cart-shopping fa-lg"></i></span>
+      <span v-else-if="entry.type == 'Miete-'" class="input-group-text"
+        ><i class="fa-solid fa-house fa-lg"></i></span>
+      <span v-else-if="entry.type == 'Gehalt-'" class="input-group-text"
+        ><i class="fa-solid fa-user fa-lg"></i></span>
+      <span v-else-if="entry.type == 'Steuern-'" class="input-group-text"
+        ><i class="fa-solid fa-gavel fa-lg"></i></span>
+      <span v-else-if="entry.type == 'Verkauf+'"  class="input-group-text"
+        ><i class="fa-solid fa-box-open fa-lg"></i></span>
+      <span v-else class="input-group-text"
+        ><i class="fa-solid fa-dollar-sign fa-lg"></i></span>
+    </div>
 
     <p class="name">{{ entry.name }}</p>
       
@@ -121,15 +135,17 @@ export default {
 }
 
 .name {
+  font-weight: 400;
+  font-size: 1.2rem;
   text-align: left;
-  margin: 10px 15px 0 15px;
+  margin: 10px 0 0 10px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1; /* number of lines to show */
   line-clamp: 1;
   -webkit-box-orient: vertical;
-  max-height: 32px;
-  max-width: calc(100vw*0.9 - 185px);
+  max-height: 30px;
+  width: calc(100vw*0.9 - 240px);
 }
 
 .price {
@@ -172,6 +188,37 @@ export default {
 
 .expense {
   color: red;
+}
+
+.type {
+  width: 50px;
+}
+
+.input-group-text {
+  height: 100%;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-width: 0 1px 0 0;
+}
+
+.fa-solid {
+  position: relative;
+}
+
+.fa-user {
+  left: 3px;
+}
+
+.fa-house {
+  left: 1px;
+}
+
+.fa-gavel {
+  left: 2px;
+}
+
+.fa-dollar-sign {
+  left: 6px;
 }
 
 /*   border-radius: 0.375rem 0 0 0.375rem; */

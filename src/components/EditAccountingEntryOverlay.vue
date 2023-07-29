@@ -46,8 +46,7 @@
 
           <div v-if="entry.type == 'Verkauf+'" class="input-group mb-3">
             <span class="input-group-text"
-              ><i class="fa-solid fa-list"></i
-            ></span>
+              ><i class="fa-solid fa-box-open"></i></span>
             <select
               class="form-select"
               id="entry-product"
@@ -376,14 +375,16 @@ export default {
         else this.entry.product = this.product;
 
 
-        if(productChanged && this.entry.product.id != null) {
+        if(productChanged && this.entry.product.id != null && productInput.value != '' && productInput.value != null) {
           this.entry.name = this.entry.product.name;
           this.entry.amount = this.entry.product.price;
+        } else {
+          this.entry.name = nameInput.value;
+          this.entry.amount = amountInput.value;
         }
       } else {
         this.entry.name = nameInput.value;
         this.entry.amount = amountInput.value;
-
       }
 
       this.entry.type = typeInput.value;

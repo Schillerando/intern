@@ -481,6 +481,8 @@ const store = createStore({
 
     async addEntry({ commit }, entry) {
       try {
+        console.log(entry)
+
         commit('setState', 'loading');
 
         const { data, error } = await supabase.from('accounting').insert({
