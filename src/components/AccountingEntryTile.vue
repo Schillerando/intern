@@ -145,7 +145,7 @@ export default {
   line-clamp: 1;
   -webkit-box-orient: vertical;
   max-height: 30px;
-  width: calc(100vw*0.9 - 240px);
+  max-width: calc(100vw*0.9 - 240px);
 }
 
 .price {
