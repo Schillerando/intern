@@ -129,7 +129,9 @@
         :is="element"
         :data="ssItem"
         :products="products"
+        :key="ssItem.id"
         @deleteEntry="deleteEntry($event)"
+        @stopEditingEntry="stopEditingEntry($event)"
       ></component>
     </div>
     <div v-for="index in 2" :key="index" class="item"></div>
@@ -152,7 +154,7 @@ import router from '@/router';
 
 export default {
   name: 'SortableList',
-  emits: ['deleteProduct', 'editProduct', 'deleteEntry', 'editEntry'],
+  emits: ['deleteProduct', 'deleteEntry', 'stopEditingEntry'],
   data() {
     return {
       categories: [],
@@ -243,7 +245,8 @@ export default {
         if (a[this.sortBy] < b[this.sortBy]) return -1;
         else return 0;
       });
-      if (this.dir == 'down') this.sortedShownItems.reverse();
+      if (this.dir == 'up' && this.sortBy == 'created_at') this.sortedShownItems.reverse();
+      else if (this.dir == 'down' && this.sortBy != 'created_at') this.sortedShownItems.reverse();
       return;
     },
     searchForString: function (string, object) {
@@ -367,6 +370,9 @@ export default {
     },
     deleteEntry(entryData) {      
       this.$emit('deleteEntry', entryData)
+    },
+    stopEditingEntry(entryData) {
+      this.$emit('stopEditingEntry', entryData)
     }
   },
   mounted() {

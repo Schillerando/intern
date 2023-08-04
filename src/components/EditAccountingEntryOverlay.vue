@@ -388,7 +388,7 @@ export default {
       }
 
       this.entry.type = typeInput.value;
-      this.entry.infoInput = infoInput.value;
+      this.entry.info = infoInput.value;
 
       if (!pressed && !this.continuePressed) return;
 

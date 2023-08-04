@@ -21,7 +21,7 @@
           <div class="col-lg-4 equal">
             <div class="card">
               <div class="card-body">
-                <div class="profit" :class="{ revenue: profit > 0, expenses: profit < 0 }">
+                <div :key="key" class="profit" :class="{ revenue: profit > 0, expenses: profit < 0 }">
                   <h3>Gewinn / Verlust</h3>
                   <h1>{{ profit }} $</h1>
                   <div class="euroProfit">{{ euroProfit }} €</div> 
@@ -38,7 +38,7 @@
           <div class="col-lg-4 equal">
             <div class="card">
               <div class="card-body">
-                <div class="revenue">
+                <div :key="key" class="revenue">
                   <h3>Einnahmen</h3>
                   <h1>{{ revenue }} $</h1>
                 </div>
@@ -49,7 +49,7 @@
           <div class="col-lg-4 equal">
             <div class="card">
               <div class="card-body">
-                <div class="expenses">
+                <div :key="key" class="expenses">
                   <h3>Ausgaben</h3>
                   <h1>{{ expenses }} $</h1>
                 </div>
@@ -64,7 +64,9 @@
       <div class="col-lg-6">
         
         <div class="canvas">
-          <canvas id="total-chart"></canvas>
+          <canvas :key="key" id="total-chart"></canvas>
+
+          <canvas :key="key" id="type-chart"></canvas>
         </div>
 
       </div>
@@ -77,6 +79,8 @@
             :key="key"
             element="AccountingEntryTile"
             @deleteEntry="deleteEntry($event)"
+            @stopEditingEntry="stopEditingEntry($event)"
+
           />
 
           <!--
@@ -147,7 +151,10 @@ export default {
       profit: 0,
       euroProfit: 0,
       newEntry: false,
+      listKey: 0,
       key: 0,
+      totalChart: null,
+      typeChart: null
     };
   },
   async created() {
@@ -168,10 +175,10 @@ export default {
 
     if (error) throw error;
 
-    this.entries = data.sort((a, b) => a.created_at > b.created_at);
-    
+    this.entries = data
+
     this.calculateProfit()
-    this.updateTotalGraph()
+    this.updateGraphs()
     
   },
   methods: {
@@ -181,24 +188,36 @@ export default {
       var index = this.entries.findIndex(item => item.id == entryData.id)
       this.entries.splice(index, 1)
 
-      this.key++;
-
       this.store.dispatch('deleteEntry', entryData)
 
       this.calculateProfit()
-      this.updateTotalGraph()
+      this.updateGraphs()
+
+      this.key++;
     }, 
     stopEditingEntry(entryData) {
       this.newEntry = false;
 
       if(entryData != null) {
-        this.entries.push(entryData);
+        const index = this.entries.findIndex((entry) => {
+          return entry.id = entryData.id
+        }) 
+        if(index == -1) {
+          this.entries.push(entryData);
+        } else {
+          this.entries[index].type = entryData.type
+          this.entries[index].product = entryData.product
+          this.entries[index].name = entryData.name
+          this.entries[index].amount = entryData.amount
+          this.entries[index].info = entryData.info
+          this.entries[index].bill_picture = entryData.bill_picture
+        }
       }
 
-      this.key++;
-
       this.calculateProfit()
-      this.updateTotalGraph()
+      this.updateGraphs()
+
+      this.key++;
     },
     addEntry() {
       this.newEntry = true;
@@ -217,7 +236,13 @@ export default {
 
       this.profit = this.revenue - this.expenses;
       this.euroProfit = this.profit > 0 ? this.profit * 0.08 : this.profit * 0.1
+      this.euroProfit = this.euroProfit.toFixed(2);
+
     },
+    updateGraphs() {
+      this.updateTotalGraph()
+      this.updateTypeGraph()
+    },  
     updateTotalGraph() {
       const revenueChart = {
         type: 'bar',
@@ -245,14 +270,20 @@ export default {
         type: 'line',
         label: 'Gewinn / Verlust',
         data: [],
-        backgroundColor:"rgba(13, 110, 253, 0.2)",
+        backgroundColor:"rgba(13, 110, 253, 1)",
         borderColor: "rgba(13, 110, 253, 1)",
         order: 1,
       }
 
+      var totalEntries = []
+      this.entries.forEach((entry) => {
+        totalEntries.push(entry)
+      })
+      totalEntries.sort((a, b) => a.created_at.localeCompare(b.created_at));
+
       const labels = []
 
-      this.entries.forEach(entry => {
+      totalEntries.forEach(entry => {
 
         var index;
 
@@ -271,20 +302,20 @@ export default {
         }
 
         if(entry.amount > 0) {
-            revenueChart.data[index] += entry.amount;
-          } else {
-            expensesChart.data[index] += entry.amount;
-          }
+          revenueChart.data[index] += entry.amount;
+        } else {
+          expensesChart.data[index] += entry.amount;
+        }
 
-          profitChart.data[index] += entry.amount;
+        profitChart.data[index] += entry.amount;
 
       })
 
-      console.log(labels)
-      console.log(profitChart)
+      if(this.totalChart != null) this.totalChart.destroy()
+      this.totalChart = null
 
       const ctx = document.getElementById('total-chart');
-      new ChartJS(ctx, {
+      this.totalChart = new ChartJS(ctx, {
         data: {
           labels: labels,
           datasets: [
@@ -305,6 +336,88 @@ export default {
           responsive: true,
         }
       });
+      
+    },
+    updateTypeGraph() {
+
+      var typeEntries = []
+      this.entries.forEach((entry) => {
+        typeEntries.push(entry)
+      })
+      typeEntries.sort((a, b) => a.type[a.type.length-1].localeCompare(b.type[b.type.length-1]));
+
+      const typeChart = {
+        type: 'bar',
+        data: [],
+        backgroundColor: [],
+        borderColor: [],
+        order: 1,
+        borderSkipped: true,
+        borderWidth: 1
+      }
+
+      const labels = []
+
+      typeEntries.forEach(entry => {
+
+        var index;
+
+        if(labels.includes(entry.type.replace('+', '').replace('-', ''))) {
+          index = labels.indexOf(entry.type.replace('+', '').replace('-', ''))
+
+        } else {
+          labels.push(entry.type.replace('+', '').replace('-', ''))
+
+          index = labels.length - 1
+
+          typeChart.data.push(0)
+
+          if(entry.amount > 0) {
+            typeChart.backgroundColor.push("rgba(0, 128, 0, 0.2)")
+            typeChart.borderColor.push("rgba(0, 128, 0, 1)")
+          } else {
+            typeChart.backgroundColor.push("rgba(255, 0, 0, 0.2)")
+            typeChart.borderColor.push("rgba(255, 0, 0, 1)")
+          }
+        }
+
+        typeChart.data[index] += entry.amount;
+
+      })
+
+
+      var sonstIndex = labels.indexOf('Sonstige Einnahme')
+      if(sonstIndex != -1) labels[sonstIndex] = 'Sonst. Einn.'
+      sonstIndex = labels.indexOf('Sonstige Ausgabe')
+      if(sonstIndex != -1) labels[sonstIndex] = 'Sonst. Ausg.'
+
+      if(this.typeChart != null) this.typeChart.destroy()
+      this.typeChart = null
+
+      const ctx = document.getElementById('type-chart');
+      this.typeChart = new ChartJS(ctx, {
+        data: {
+          labels: labels,
+          datasets: [
+            typeChart
+          ]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: false,
+            },
+          },
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+
+      
     }
   }
 };
@@ -388,6 +501,12 @@ h3 {
 
 #total-chart {
   width: 100%;
+  margin-bottom: 50px;
+}
+
+#type-chart {
+  width: 100%;
+  margin-bottom: 50px;
 }
 
 </style>

@@ -43,7 +43,7 @@ export default {
   name: 'AccountingEntryTile',
   props: ['data', 'products'],
   components: { EditAccountingEntryOverlay },
-  emits: ['deleteEntry', 'editEntry'],
+  emits: ['deleteEntry', 'stopEditingEntry'],
   data() {
     return {
       edit: false,
@@ -108,6 +108,8 @@ export default {
 
       this.entry = entryData;
       this.picture = entryData.image;
+
+      this.$emit('stopEditingEntry', entryData)
     },
     deleteEntry(entryData) {
       this.edit = false;
