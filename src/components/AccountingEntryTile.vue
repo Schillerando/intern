@@ -4,18 +4,18 @@
   <div class="card" @click="edit = true">
     
     <div class="type">
-      <span v-if="entry.type == 'Einkauf-'" class="input-group-text"
-        ><i class="fa-solid fa-cart-shopping fa-lg"></i></span>
-      <span v-else-if="entry.type == 'Miete-'" class="input-group-text"
-        ><i class="fa-solid fa-house fa-lg"></i></span>
-      <span v-else-if="entry.type == 'Gehalt-'" class="input-group-text"
-        ><i class="fa-solid fa-user fa-lg"></i></span>
-      <span v-else-if="entry.type == 'Steuern-'" class="input-group-text"
-        ><i class="fa-solid fa-gavel fa-lg"></i></span>
-      <span v-else-if="entry.type == 'Verkauf+'"  class="input-group-text"
-        ><i class="fa-solid fa-box-open fa-lg"></i></span>
-      <span v-else class="input-group-text"
-        ><i class="fa-solid fa-dollar-sign fa-lg"></i></span>
+      <span class="input-group-text"
+        >
+        <i v-if="entry.type == 'Einkauf-'" class="fa-solid fa-cart-shopping fa-lg"></i>
+        <i v-else-if="entry.type == 'Miete-'" class="fa-solid fa-house fa-lg"></i>
+        <i v-else-if="entry.type == 'Gehalt-'" class="fa-solid fa-user fa-lg"></i>
+        <i v-else-if="entry.type == 'Steuern-'" class="fa-solid fa-gavel fa-lg"></i>
+        <i v-else-if="entry.type == 'Verkauf+'" class="fa-solid fa-box-open fa-lg"></i>
+        <i v-else class="fa-solid fa-dollar-sign fa-lg"></i>
+      
+        <i v-if="entry.bill_picture != null" class="fa-solid fa-file"></i>
+      </span>
+
     </div>
 
     <p class="name">{{ entry.name }}</p>
@@ -194,6 +194,7 @@ export default {
 
 .type {
   width: 50px;
+  position: relative;
 }
 
 .input-group-text {
@@ -221,6 +222,13 @@ export default {
 
 .fa-dollar-sign {
   left: 6px;
+}
+
+.fa-file {
+  position: absolute;
+  color: #0d6efd;
+  left: 10px;
+  top: 5px;
 }
 
 /*   border-radius: 0.375rem 0 0 0.375rem; */

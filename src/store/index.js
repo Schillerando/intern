@@ -591,7 +591,7 @@ const store = createStore({
           {
             const { data, error } = await supabase
               .from('accounting')
-              .update({ entry_picture: fileName })
+              .update({ bill_picture: fileName })
               .eq('id', entry.id)
               .select()
 

@@ -200,8 +200,12 @@ export default {
 
       if(entryData != null) {
         const index = this.entries.findIndex((entry) => {
-          return entry.id = entryData.id
+          return entry.id == entryData.id
         }) 
+
+        console.log(this.entries)
+        console.log(index)
+
         if(index == -1) {
           this.entries.push(entryData);
         } else {
