@@ -109,13 +109,13 @@ import TitleDiv from '../components/TitleDiv';
 import EditAccountingEntryOverlay from '../components/EditAccountingEntryOverlay';
 import SortableList from '@/components/SortableList.vue';
 import { supabase } from '@/supabase';
-import { computed } from 'vue';
 import { useStore } from 'vuex';
 // eslint-disable-next-line no-unused-vars
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js/auto'
 
 export default {
   name: 'AccountingView',
+  props: ['companyData'],
   components: {
     TitleDiv,   
     EditAccountingEntryOverlay,
@@ -124,11 +124,8 @@ export default {
   setup() {
     const store = useStore();
 
-    const companyData = computed(() => store.state.userCompany);
-
     return {
       store,
-      companyData
     }
   },
   mounted() {

@@ -30,11 +30,11 @@ import TitleDiv from '../components/TitleDiv';
 //import ProductTile from '../components/ProductTile';
 import EditProductOverlay from '../components/EditProductOverlay';
 import SortableList from '@/components/SortableList.vue';
+import { computed } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
   name: 'ProductView',
-  props: ['companyData'],
   components: {
     TitleDiv,
     //ProductTile,
@@ -44,8 +44,11 @@ export default {
   setup() {
     const store = useStore();
 
+    const companyData = computed(() => store.state.userCompany);
+
     return {
       store,
+      companyData
     }
   },
   data() {

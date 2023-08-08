@@ -1,11 +1,11 @@
 <template>
-  <h1>Test</h1>
+  <h1>test</h1>
 </template>
 
 <script>
 
 export default {
-  name: 'ettingsView',
+  name: 'OrderView',
   data() {
     return {};
   },

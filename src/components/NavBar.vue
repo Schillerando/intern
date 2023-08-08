@@ -3,7 +3,7 @@
   <header @click="changeLinkColors" class="navbar navbar-expand-lg navbar-light sticky-top">
     <router-link to="/" class="brand navbar-brand">
       <img class="logo" src="@/assets/logo_transparent.png" />
-      Business
+      Intern
     </router-link>
     <button
       class="navbar-toggler"
@@ -17,18 +17,26 @@
     <div class="collapse navbar-collapse" id="navbarToggler">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <router-link class="nav-link" to="/buchhaltung">Buchhaltung</router-link>
+          <router-link class="nav-link" to="/stats">Statistiken</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link" to="/orders">Bestellungen</router-link>
         </li>
         <li class="nav-item">
           <router-link class="nav-link" to="/services">Services</router-link>
         </li>
         <li class="nav-item">
-          <router-link class="nav-link" to="/produkte"
-            >Produkte</router-link
+          <router-link class="nav-link" to="/companies"
+            >Unternehmen</router-link
           >
         </li>
         <li class="nav-item">
-          <router-link class="nav-link" to="/einstellungen">Einstellungen</router-link>
+          <router-link class="nav-link" to="/users"
+            >Nutzer</router-link
+          >
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link" to="/settings">Einstellungen</router-link>
         </li>
         <li class="nav-item">
           <a class="nav-link" :href="mainUrl">
@@ -66,17 +74,23 @@ export default {
       }
 
       switch(path) {
-        case "buchhaltung":
+        case "stats":
           links[0].style.color = '#00a100'
           break;
-        case "services":
+        case "orders":
           links[1].style.color = '#00a100'
           break;
-        case "produkte":
+        case "services":
           links[2].style.color = '#00a100'
           break;
-        case "einstellungen":
-          links[3].style.color = '#00a100'  
+        case "companies":
+          links[3].style.color = '#00a100'
+          break;
+        case "users":
+          links[4].style.color = '#00a100'
+          break;
+        case "settings":
+          links[5].style.color = '#00a100'  
           break;
         default:
           break;

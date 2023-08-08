@@ -5,7 +5,7 @@
 <script>
 
 export default {
-  name: 'ettingsView',
+  name: 'StatsView',
   data() {
     return {};
   },

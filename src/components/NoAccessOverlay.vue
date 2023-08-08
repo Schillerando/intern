@@ -1,9 +1,9 @@
 <template>
-  <div v-if="companyData != null && companyData != undefined">
-    <div v-if="userData.id != companyData.user_uid && companyData.abo != '' && companyData.abo != null" class="overlay">
+  <div v-if="userData != null">
+    <div v-if="userData.role != 'admin'" class="overlay">
       <div class="centered">
         <img class="lock" src="@/assets/lock.png" alt="">
-        <h4 class="mt-3">Auf diese Seite hat nur der Geschäftsführer Zugriff!</h4>
+        <h4 class="mt-3">Auf diese Seite haben nur Admins Zugriff!</h4>
       </div>
 
     </div>
@@ -21,13 +21,11 @@ export default {
     const store = useStore();
     const router = useRouter();
 
-    const companyData = computed(() => store.state.userCompany);
     const userData = computed(() => store.state.user);
 
     return {
       store,
       router,
-      companyData,
       userData
     };
   },

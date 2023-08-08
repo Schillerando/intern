@@ -1,82 +1,62 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '../views/HomeView';
-import ProductView from '../views/ProductView';
+import CompanyDetailView from '../views/CompanyDetailView';
+import CompanyView from '../views/CompanyView';
 import ServiceView from '../views/ServiceView';
 import SettingsView from '../views/SettingsView';
-import CompanyRegistrationView from '../views/CompanyRegistrationView';
-import AccountingView from '../views/AccountingView';
-import AGBView from '../views/AGBView';
-import UpdateAboView from '../views/UpdateAboView';
+import OrderView from '../views/OrderView';
+import UserView from '../views/UserView';
+import StatsView from '../views/StatsView';
 import store from '../store/index';
 import { supabase } from '../supabase';
+
 
 const routes = [
   {
     path: '/',
-    name: 'HomeView',
-    component: HomeView,
+    alias: ['/stats'],
+    name: 'StatsView',
+    component: StatsView,
   },
   {
-    path: '/produkte',
-    name: 'ProductView',
-    component: ProductView,
-    meta: {
-      locked: true,
-      company: true
-    },
+    path: '/orders',
+    name: 'OrderView',
+    component: OrderView,
   },
   {
     path: '/services',
     name: 'ServiceView',
     component: ServiceView,
-    meta: {
-      locked: true,
-      company: true
-    },
   },
   {
-    path: '/buchhaltung',
-    name: 'AccountingView',
-    component: AccountingView,
-    meta: {
-      locked: true,
-      company: true
-    },
+    path: '/companies',
+    name: 'CompanyView',
+    component: CompanyView,
   },
   {
-    path: '/einstellungen',
+    path: '/users',
+    name: 'UserView',
+    component: UserView,
+  },
+  {
+    path: '/settings',
     name: 'SettingsView',
     component: SettingsView,
     meta: {
       locked: true,
-      company: true,
       noAccess: true,
     },
   },
   {
-    path: '/companyRegistration',
-    name: 'CompanyRegistrationView',
-    component: CompanyRegistrationView,
+    path: '/:companyalias',
+    component: CompanyDetailView,
     meta: {
       footer: false,
-      company: false,
-      auth: true
+      locked: true,
+      noAccess: true,
     },
   },
-  {
-    path: '/agb',
-    name: 'AGBView',
-    component: AGBView,
-  },
-  {
-    path: '/updateAbo',
-    name: 'UpdateAboView',
-    component: UpdateAboView,
-    meta: {
-      footer: false,
-      company: true
-    },
-  }
+
+
 ];
 
 const router = createRouter({
@@ -91,46 +71,71 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
 
 
-  if (to.query.ext == 'true' && to.query.access_token != null && to.query.access_token != "null") {
+  if (to.query.int == 'true' && to.query.access_token != null && to.query.access_token != "null") {
     try {
-      const { data } = await supabase.auth.setSession({
-        access_token: to.query.access_token,
-        refresh_token: to.query.refresh_token,
-      })
-      store.commit('setUser', data.user);
-      store.dispatch('startUserCompanySubscription');
+      var newUser = null
+      {
+        const { data } = await supabase.auth.setSession({
+          access_token: to.query.access_token,
+          refresh_token: to.query.refresh_token,
+        })
+
+        newUser = data.user
+      }
+
+      {
+        const { data, error } = supabase
+          .from('user_roles')
+          .select()
+          .eq('id', newUser.id)
+
+        if(error) throw error;
+
+        if(data != null) newUser.role = data[0].role
+      }
+      
+      store.commit('setUser', newUser);
       await new Promise((resolve) => setTimeout(resolve, 500));
     } catch(e) {
       store.commit('setUser', null);
-      store.commit('setUserCompany', null);
     }
     
-  } else if(to.query.ext == 'true') {
+  } else if(to.query.int == 'true') {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   // get current user info
   const user = store.getters.getUser;
-  var userCompany = store.getters.getUserCompany;
 
-  if (userCompany == null) {
-    new Promise((resolve) => setTimeout(resolve, 500));
-    userCompany = store.getters.getUserCompany;
+  if(user != null) {
+    if(user.role == 'authenticated') {
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select()
+          .eq('id', user.id)
+  
+        if(error) throw error;
+  
+        if(data != null) user.role = data[0].role
+  
+        store.commit('setUser', user);
+      } catch(e) {
+        console.log(e)
+      }
+    }
+    
+    console.log(user.role)
   }
 
-  if ((to.meta.auth || to.meta.company) && user == null) {
-    window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=ext_' + to.path)
+  if (user == null) {
+    window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=int_' + to.path)
     next();
   }
-  else if (to.meta.company && userCompany == null && user != null && user.email_confirmed_at == null) {
-    window.location.replace(process.env.VUE_APP_MAIN_URL + '/account')
+  else if(user.role != 'admin' && user.role != 'driver') {
+    window.location.replace(process.env.VUE_APP_MAIN_URL)
     next();
   }
-  else if (to.meta.company && userCompany == null && user != null) next({ path: 'companyRegistration' });
-  else if (to.meta.company == false && userCompany != null) next({ path: 'einstellungen' })
-  else if (to.meta.auth == false && user != null) next({ path: from.path })
-  else if (to.name == 'UpdateAboView' && userCompany != null && userCompany.abo != '' && userCompany.abo != null) next({ path: from.path })
-  else if(to.name == 'CompanyRegistrationView' && userCompany != null) next({ path: 'einstellungen'})
   else next();
 
 });

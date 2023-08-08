@@ -7,7 +7,6 @@ const store = createStore({
   state: {
     user: null,
     session: null,
-    userCompany: null,
     state: undefined,
     currentProduct: null,
     currentEntry: null
@@ -15,9 +14,6 @@ const store = createStore({
   mutations: {
     setUser(state, payload) {
       state.user = payload;
-    },
-    setUserCompany(state, payload) {
-      state.userCompany = payload;
     },
     setState(state, payload) {
       state.state = payload;
@@ -32,9 +28,6 @@ const store = createStore({
   getters: {
     getUser(state) {
       return state.user;
-    },
-    getUserCompany(state) {
-      return state.userCompany;
     },
     getState(state) {
       return state.state;
@@ -58,16 +51,14 @@ const store = createStore({
 
           if(isSafari) {
             commit('setUser', null);
-            commit('setUserCompany', null);
           } else this.dispatch('getSharedLogin')
           
         } else {
-          commit('setUser', data.user);
-          this.dispatch('startUserCompanySubscription');
+          if(this.state.getUser == null) commit('setUser', data.user);
+          console.log(this.state.getUser.role)
         }
       } catch(e) {
         commit('setUser', null);
-        commit('setUserCompany', null);
       }
       
 
@@ -92,7 +83,6 @@ const store = createStore({
 
         if (error || data.session == null) {
           commit('setUser', null);
-          commit('setUserCompany', null);
 
           document.cookie = `supabase-access-token=false;`;
           document.cookie = `supabase-refresh-token=false;`;
@@ -101,10 +91,8 @@ const store = createStore({
         } else {
           if (this.getters.getUser != null) {
             commit('setUser', data.user);
-            this.dispatch('startUserCompanySubscription');
           } else {
             commit('setUser', data.user);
-            this.dispatch('startUserCompanySubscription');
 
             router.go(router.currentRoute);
           }
@@ -113,67 +101,11 @@ const store = createStore({
       }
       else if (this.getters.getUser != null) {
         commit('setUser', null);
-        commit('setUserCompany', null);
         router.go(router.currentRoute);
       } else {
-        commit('setUserCompany', null);
         commit('setUser', null);
       }
     },
-    async startUserCompanySubscription({ commit }) {
-      try {
-        const { data, error } = await supabase
-          .from('companies')
-          .select()
-          .or(
-            'user_uid.eq.' +
-            this.getters.getUser.id +
-            ',employees.cs.' +
-            '{"' +
-            this.getters.getUser.email +
-            '"}'
-          );
-
-        if (error) throw error;
-
-        
-        if (data[0] == null) {
-          commit('setUserCompany', null);
-          return
-        }
-
-        commit('setUserCompany', data[0]);
-
-        const companySubscription = supabase.channel('any').on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'companies',
-            filter: 'id=eq.' + this.getters.getUserCompany.id,
-          },
-          (payload) => {
-            console.log('Database change received!', payload.new);
-            commit('setUserCompany', payload.new);
-          }
-        );
-
-        companySubscription.subscribe();
-      } catch (error) {
-        commit('setUserCompany', null);
-        console.log(error.error_description || error.message);
-      }
-    },
-
-    async stopUserCompanySubscription({ commit }) {
-      try {
-        await supabase.removeAllChannels();
-        commit('setUserCompanySubscription', null);
-      } catch (error) {
-        console.log(error.error_description || error.message);
-      }
-    },
-
     async createCompany({ commit }, form) {
       try {
         commit('setState', 'loading');
@@ -197,9 +129,9 @@ const store = createStore({
         })
         .select();
 
-        if (error) throw error;
+        var companyId = data[0].id
 
-        commit('setUserCompany', data[0])
+        if (error) throw error;
 
         if (form.image != null) {
           var type = form.image.substring(form.image.indexOf(':'), form.image.indexOf(';')).replace(':', '')
@@ -223,7 +155,7 @@ const store = createStore({
             const { error } = await supabase
               .from('companies')
               .update({ header_picture: fileName })
-              .eq('id', this.getters.getUserCompany.id)
+              .eq('id', this.getters.companyId)
 
               if (error) throw error;
           }
@@ -231,9 +163,6 @@ const store = createStore({
 
 
         {
-          const { data, error } = await supabase.auth.updateUser({
-            data: { isCompanyLeader: true },
-          });
 
           if (error) throw error;
           commit('setUser', data.user);
@@ -249,7 +178,7 @@ const store = createStore({
               info: product.info,
               price: product.price,
               categories: product.categories,
-              company_id: this.getters.getUserCompany.id,
+              company_id: companyId,
               auth_uid: this.getters.getUser.id,
               delivery: product.delivery,
               public: product.public
@@ -296,89 +225,6 @@ const store = createStore({
 
         await router.replace('/einstellungen');
       } catch (error) {
-        commit('setState', 'failure');
-        console.log(error.error_description || error.message);
-      }
-    },
-    async updateAbo({ commit }, form) {
-      try {
-        commit('setState', 'loading');
-
-        if(form.abo != 'Later') {
-          const { error } = await supabase.from('companies').update({
-            abo: form.abo,
-            relevance: form.abo == 'Business' ? 50 : 100
-          })
-            .eq('id', this.getters.getUserCompany.id);
-
-            if (error) throw error;
-
-        }
-
-
-        commit('setState', 'success');
-
-        router.back();
-      } catch (error) {
-        commit('setState', 'failure');
-        console.log(error.error_description || error.message);
-      }
-    },
-    async addProduct({ commit }, product) {
-      try {
-        commit('setState', 'loading');
-
-        const { data, error } = await supabase.from('products').insert({
-          name: product.name,
-          info: product.info,
-          categories: product.categories,
-          price: product.price,
-          delivery: product.delivery,
-          public: product.public, 
-          auth_uid: this.getters.getUser.id,
-          company_id: this.getters.getUserCompany.id
-        })
-        .select()
-
-        if (error) throw error;
-
-        commit('setCurrentProduct', data[0])
-
-        if (product.image != null) {
-
-          var type = product.image.substring(product.image.indexOf(':'), product.image.indexOf(';')).replace(':', '')
-          var fileName = data[0].id + '.' + type.split('/')[1]
-
-          {
-            const { error } = await supabase
-              .storage
-              .from('products-pictures')
-              .upload(fileName, product.image, {
-                cacheControl: '3600',
-                upsert: true,
-                contentType: type
-              })
-
-            if (error) throw error;
-
-          }
-
-          {
-            const { data, error } = await supabase
-              .from('products')
-              .update({ product_picture: fileName })
-              .eq('id', this.getters.getCurrentProduct.id)
-              .select()
-
-            if (error) throw error;
-
-            commit('setCurrentProduct', data[0])
-          }
-        }
-
-        commit('setState', 'success');
-      } catch (error) {
-        commit('setCurrentProduct', null)
         commit('setState', 'failure');
         console.log(error.error_description || error.message);
       }
@@ -474,70 +320,6 @@ const store = createStore({
 
         commit('setState', 'success');
       } catch (error) {
-        commit('setState', 'failure');
-        console.log(error.error_description || error.message);
-      }
-    },
-
-    async addEntry({ commit }, entry) {
-      try {
-        console.log(entry)
-
-        commit('setState', 'loading');
-
-        const { data, error } = await supabase.from('accounting').insert({
-          name: entry.name,
-          info: entry.info,
-          type: entry.type,
-          amount: entry.type.includes('-') ? -Math.abs(entry.amount) : Math.abs(entry.amount),
-          product: entry.product.id,
-          user_id: this.getters.getUser.id,
-          company_id: this.getters.getUserCompany.id
-        })
-        .select()
-
-        if (error) throw error;
-
-        commit('setCurrentEntry', data[0])
-
-        if (entry.image != null) {
-
-          var type = entry.image.substring(entry.image.indexOf(':'), entry.image.indexOf(';')).replace(':', '')
-          var fileName = data[0].id + '.' + type.split('/')[1]
-
-          {
-            console.log(entry.image)
-
-            const { error } = await supabase
-              .storage
-              .from('bill-pictures/' + this.getters.getUserCompany.id)
-              .upload(fileName, entry.image, {
-                cacheControl: '3600',
-                upsert: true,
-                contentType: type
-              })
-
-            if (error) throw error;
-
-          }
-
-          {
-            const { data, error } = await supabase
-              .from('accounting')
-              .update({ bill_picture: fileName })
-              .eq('id', this.getters.getCurrentEntry.id)
-              .select()
-
-            if (error) throw error;
-
-            commit('setCurrentEntry', data[0])
-          }
-          
-        }
-
-        commit('setState', 'success');
-      } catch (error) {
-        commit('setCurrentEntry', null)
         commit('setState', 'failure');
         console.log(error.error_description || error.message);
       }

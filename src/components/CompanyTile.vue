@@ -1,51 +1,67 @@
 <template>
-  <div class="sizing">
-    <div class="card">
-      <div class="image">
-        <img
-          v-if="data.name == 'Schillerando'"
-          src="@/assets/logo_reversed_background.png"
-          alt=""
-        />
-        <div v-else-if="data.header_picture == null" class="no-image"></div>
-        <img
-          v-else
-          src="https://upload.wikimedia.org/wikipedia/commons/3/3a/M%C3%BCnster%2C_LVM%2C_B%C3%BCrogeb%C3%A4ude_--_2013_--_5149-51.jpg"
-          alt=""
-        />
-      </div>
-      <div class="row">
-        <h2 class="col-9 name">
-          {{ data.name }}
-        </h2>
-        <div class="col-3">
-          <CompanyBadge
-            :verified="data.verified"
-            :premium="data.abo == 'Premium'"
-            class="company-badge"
-          />
+  <router-link :to="link" class="hover">
+    <div class="sizing">
+      <div class="card">
+        <div class="image">
+          <div v-if="this.picture == null" class="no-image">
+            <i class="fa-solid fa-image fa-2xl"></i>
+          </div>
+          <img v-else :src="picture" alt="" />
         </div>
-      </div>
-      <div class="category">
-        {{ data.categories[0] }}
-      </div>
-      <div class="row">
-        <div class="col-9 location">
-          <i class="fa-solid fa-location-dot"></i>
-          <div class="location-text">{{ data.location }}</div>
+        <div class="row">
+          <h2 class="col-9 name highlight">
+            {{ data.name }}
+          </h2>
+          <div class="col-3">
+            <CompanyBadge
+              :verified="data.verified"
+              :premium="data.abo == 'Premium'"
+              :self="data.alias == 'schillerando'"
+              class="company-badge"
+            />
+          </div>
+        </div>
+        <div class="category highlight">
+          {{ data.categories[0] }}
+        </div>
+        <div class="row">
+          <div class="col-9 location">
+            <i class="fa-solid fa-location-dot"></i>
+            <div class="location-text">{{ data.location }}</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </router-link>
 </template>
 
 <script>
 import CompanyBadge from './CompanyBadge.vue';
+import { supabase } from '../supabase';
 
 export default {
   name: 'CompanyTile',
   props: ['data'],
+  data() {
+    return {
+      picture: null,
+    };
+  },
   components: { CompanyBadge },
+  async mounted() {
+    if (this.data.header_picture != null) {
+      const response = await supabase.storage
+        .from('public/sellers-headings')
+        .download(this.data.header_picture);
+      if (response.data != null) this.picture = await response.data.text();
+      if (response.error) console.warn(response.error);
+    }
+  },
+  computed: {
+    link() {
+      return `/${this.data.alias}`;
+    },
+  },
 };
 </script>
 
@@ -128,5 +144,13 @@ img {
 .company-badge {
   float: right;
   margin-right: 5px;
+}
+
+.fa-image {
+  position: absolute;
+  font-size: 6rem;
+  top: 50%;
+  left: calc(50% - 3rem);
+  color: black;
 }
 </style>
