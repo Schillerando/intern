@@ -1,4 +1,4 @@
-# business
+# intern
 
 ## Project setup
 
