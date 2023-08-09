@@ -15,7 +15,7 @@
           <div class="col-3">
             <CompanyBadge
               :verified="data.verified"
-              :premium="data.abo == 'Premium'"
+              :premium="data.abo == 'Business'"
               :self="data.alias == 'schillerando'"
               class="company-badge"
             />

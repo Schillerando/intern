@@ -3,7 +3,7 @@
 
   <div class="mb-4" v-if="notVerfiedCompanies.length > 0">
     <h3 class="mb-2">
-      Not verified Companies
+      Nicht verifiziert
     </h3>
     <div class="list">
       <div v-for="ssItem in notVerfiedCompanies" v-bind:key="ssItem.id">
@@ -15,7 +15,7 @@
 
   <div class="mb-4 mt-4" v-if="noAboCompanies.length > 0">
     <h3 class="mb-2">
-    Companies without an abo
+    Kein Abo ausgewählt
   </h3>
   <div class="list">
     <div v-for="ssItem in noAboCompanies" v-bind:key="ssItem.id">
@@ -25,7 +25,9 @@
   </div>
   </div>
 
-  <CompanySortableList v-if="companies.length > 0" :items="companies" :loading="loading" element="CompanyTile" />
+  <div class="mt-4">
+    <CompanySortableList v-if="companies.length > 0" :items="companies" :loading="loading" element="CompanyTile" />
+  </div>
   <div
     v-if="loading"
     class="spinner-border"

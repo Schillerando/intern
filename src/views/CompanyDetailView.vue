@@ -1,5 +1,5 @@
 <template>
-  <div v-if="company != undefined">
+  <div style="margin-bottom: 100px;" v-if="company != undefined">
     <AlertPopup :title="this.alertTitle" :info="this.alertInfo" />
 
     <div class="nav" aria-label="Page navigation example">
@@ -19,7 +19,7 @@
             class="alert alert-warning"
             role="alert"
           >
-            Dein Unternehmen wird noch überprüft. Erst nach Bestätigung werden dein Unternehmen und seine Produkte auf schillerando.de zu sehen sein.
+            Das Unternehmen muss noch überprüft werden.
           </div>
         </div>
         
@@ -124,6 +124,11 @@
                     :value="company.info"
                     :disabled="!isCompanyEditing"
                   ></textarea>
+                </div>
+
+                <div class="form-check form-switch">
+                  <input :disabled="!isCompanyEditing" @click="validateCompanyChange(false)" :checked="company.verified" class="form-check-input" type="checkbox" role="switch" id="company-verified">
+                  <label class="form-check-label" for="flexSwitchCheckChecked">Verifiziert</label>
                 </div>
               </form>
     
@@ -292,7 +297,6 @@ export default {
   data() {
     return {
       company: undefined,
-      image: null,
       page: 0,
       isCompanyEditing: false,
       isEmployeesEditing: false,
@@ -322,7 +326,8 @@ export default {
       info: '',
       employees: [''],
       image: null, 
-      unchangedImage: null
+      unchangedImage: null,
+      verified: null
     });
 
     return {
@@ -401,7 +406,10 @@ export default {
         const response = await supabase.storage
           .from('public/sellers-headings')
           .download(this.company.header_picture);
-        if (response.data != null) this.image = await response.data.text();
+        if (response.data != null) {
+          this.form.image = await response.data.text();
+          this.form.unchangedImage = await response.data.text();
+        }
         if (response.error) console.warn(response.error);
       }
     }
@@ -443,10 +451,12 @@ export default {
       var locationInput = document.getElementById('company-location');
       var categoryInput = document.getElementById('company-category');
       var descriptionInput = document.getElementById('company-info');
+      var verifiedInput = document.getElementById('company-verified');
       nameInput.disabled = false;
       locationInput.disabled = false;
       categoryInput.disabled = false;
       descriptionInput.disabled = false;
+      verifiedInput.disabled = false;
     },
     editEmployees() {
       this.isEmployeesEditing = true;
@@ -463,6 +473,7 @@ export default {
       var locationInput = document.getElementById('company-location');
       var categoryInput = document.getElementById('company-category');
       var descriptionInput = document.getElementById('company-info');
+      var verifiedInput = document.getElementById('company-verified');
 
       if (pressed) nameInput.value = nameInput.value.trim();
       if (pressed) locationInput.value = locationInput.value.trim();
@@ -530,6 +541,7 @@ export default {
             this.form.location = locationInput.value;
             this.form.category = categoryInput.value;
             this.form.info = descriptionInput.value;
+            this.form.verified = verifiedInput.checked;
 
             this.failureAlertTitle = 'Name schon vergeben';
             this.failureAlertInfo =
@@ -544,6 +556,7 @@ export default {
         this.form.location = locationInput.value;
         this.form.info = descriptionInput.value;
         this.form.category = categoryInput.value;
+        this.form.verified = verifiedInput.checked;
 
         this.saveCompany();
       }
@@ -599,6 +612,7 @@ export default {
             categories: [this.form.category],
             location: this.form.location,
             info: this.form.info,
+            verified: this.form.verified
           })
           .eq('id', this.company.id)
           .select();
@@ -754,8 +768,7 @@ export default {
 <style scoped>
 .form-switch {
   width: fit-content;
-  position: relative;
-  margin: 0 auto;
+  margin-bottom: 20px;
 }
 
 .container {
@@ -768,9 +781,10 @@ export default {
 }
 
 .nav {
+  display: inline-block;
   position: relative;
   text-align: center;
-  margin: 0 auto;
+  margin: 50px auto 0 auto;
 }
 
 .card {

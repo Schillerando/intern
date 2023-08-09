@@ -3,7 +3,6 @@
     <NavBar />
     <router-view></router-view>
     <SocialsFooter v-if="$route.meta.footer == null" />
-    <LockedOverlay v-if="$route.meta.locked != null" />
     <NoAccessOverlay v-if="$route.meta.noAccess != null" />
   </div>
 </template>
@@ -11,7 +10,6 @@
 <script>
 import NavBar from './components/NavBar';
 import SocialsFooter from './components/SocialsFooter';
-import LockedOverlay from './components/LockedOverlay';
 import NoAccessOverlay from './components/NoAccessOverlay';
 import { useStore } from 'vuex';
 
@@ -20,7 +18,6 @@ export default {
   components: {
     NavBar,
     SocialsFooter,
-    LockedOverlay,
     NoAccessOverlay
   },
   setup() {

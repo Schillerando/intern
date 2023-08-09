@@ -1,11 +1,15 @@
 <template>
-  <h1>Test</h1>
+  <TitleDiv title="Einstellungen"></TitleDiv>
 </template>
 
 <script>
+import TitleDiv from '@/components/TitleDiv.vue';
 
 export default {
-  name: 'ettingsView',
+  name: 'SettingsView',
+  components: {
+    TitleDiv
+  },
   data() {
     return {};
   },

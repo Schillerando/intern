@@ -130,6 +130,7 @@
         :data="ssItem"
         :products="products"
         :key="ssItem.id"
+        :companyData="companyData"
         @deleteEntry="deleteEntry($event)"
         @stopEditingEntry="stopEditingEntry($event)"
       ></component>
@@ -175,7 +176,8 @@ export default {
     'noSearch',
     'sortByCategories',
     'showCategory',
-    'products'
+    'products',
+    'companyData'
   ],
   methods: {
     sort: function () {

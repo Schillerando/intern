@@ -41,6 +41,8 @@ const store = createStore({
   },
   actions: {
     async reload({ commit }) {
+      console.log('reload')
+
       var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
       isSafari = true;
 
@@ -54,13 +56,33 @@ const store = createStore({
           } else this.dispatch('getSharedLogin')
           
         } else {
-          if(this.state.getUser == null) commit('setUser', data.user);
-          console.log(this.state.getUser.role)
+          var user = data.user
+          if(this.state.user != null) user.role = this.state.user.role
+          commit('setUser', user)
         }
       } catch(e) {
         commit('setUser', null);
       }
-      
+
+      if(this.state.user != null && this.state.user.role != 'admin' && this.state.user.role != 'driver') {
+        user = this.getters.getUser
+
+        try {
+          const { data, error } = await supabase
+            .from('user_roles')
+            .select()
+            .eq('id', user.id)
+    
+          if(error) throw error;
+    
+          if(data != null) user.role = data[0].role
+    
+        } catch(e) {
+          console.log(e)
+        }
+
+        commit('setUser', user)
+      }
 
       if(!isSafari) {
         this.timer = setInterval(() => {
@@ -221,8 +243,6 @@ const store = createStore({
 
         commit('setState', 'success');
 
-        this.dispatch('startUserCompanySubscription');
-
         await router.replace('/einstellungen');
       } catch (error) {
         commit('setState', 'failure');
@@ -347,7 +367,7 @@ const store = createStore({
           if(entry.imageBefore != null) {
             const { error } = await supabase
               .storage
-              .from('bill-pictures/' + this.getters.getUserCompany.id)
+              .from('bill-pictures/' + entry.companyData.id)
               .remove(data[0].bill_picture)
 
             if (error) throw error;
@@ -359,7 +379,7 @@ const store = createStore({
           {
             const { error } = await supabase
               .storage
-              .from('bill-pictures/' + this.getters.getUserCompany.id)
+              .from('bill-pictures/' + entry.companyData.id)
               .upload(fileName, entry.image, {
                 cacheControl: '3600',
                 upsert: true,
@@ -399,7 +419,7 @@ const store = createStore({
           {
             const { error } = await supabase
               .storage
-              .from('bill-pictures/' + this.getters.getUserCompany.id)
+              .from('bill-pictures/' + entry.companyData.id)
               .remove(entry.bill_picture)
 
             if (error) throw error;

@@ -1,11 +1,15 @@
 <template>
-  <h1>Test</h1>
+  <TitleDiv title="Statistiken"></TitleDiv>
 </template>
 
 <script>
+import TitleDiv from '@/components/TitleDiv.vue';
 
 export default {
   name: 'StatsView',
+  components: {
+    TitleDiv
+  },
   data() {
     return {};
   },

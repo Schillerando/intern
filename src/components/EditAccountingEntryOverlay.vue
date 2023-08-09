@@ -155,7 +155,7 @@ import { supabase } from '@/supabase';
 
 export default {
   name: 'EditEntryOverlay',
-  props: ['data', 'edit', 'products'],
+  props: ['data', 'edit', 'products', 'companyData'],
   components: {
     AlertPopup,
   },
@@ -330,7 +330,7 @@ export default {
 
         if (newEntry.bill_picture != null) {
           const response = await supabase.storage
-            .from('bill-pictures/' + this.store.getters.getUserCompany.id)
+            .from('bill-pictures/' + this.companyData.id)
             .download(newEntry.bill_picture);
           if (response.data != null) {
             this.entry.image = await response.data.text();

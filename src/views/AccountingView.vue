@@ -1,5 +1,5 @@
 <template>
-  <EditAccountingEntryOverlay v-if="newEntry" :products="products" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry()"/>
+  <EditAccountingEntryOverlay v-if="newEntry" :products="products" :companyData="companyData" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry()"/>
 
   <div style="width: 100vw;">
     <TitleDiv title="Buchhaltung" />
@@ -76,6 +76,7 @@
           <SortableList
             :items="entries"
             :products="products"
+            :companyData="companyData"
             :key="key"
             element="AccountingEntryTile"
             @deleteEntry="deleteEntry($event)"

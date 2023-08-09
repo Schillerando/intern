@@ -256,8 +256,6 @@ export default {
     },
   },
   mounted() {
-    console.log(this.items)
-
     this.generateCategories();
     this.generateShownItems();
   },

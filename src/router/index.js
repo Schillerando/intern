@@ -84,7 +84,10 @@ router.beforeEach(async (to, from, next) => {
       }
 
       {
-        const { data, error } = supabase
+        
+        console.log(newUser)
+
+        const { data, error } = await supabase
           .from('user_roles')
           .select()
           .eq('id', newUser.id)
@@ -95,7 +98,6 @@ router.beforeEach(async (to, from, next) => {
       }
       
       store.commit('setUser', newUser);
-      await new Promise((resolve) => setTimeout(resolve, 500));
     } catch(e) {
       store.commit('setUser', null);
     }
@@ -105,36 +107,15 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // get current user info
-  const user = store.getters.getUser;
-
-  if(user != null) {
-    if(user.role == 'authenticated') {
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select()
-          .eq('id', user.id)
-  
-        if(error) throw error;
-  
-        if(data != null) user.role = data[0].role
-  
-        store.commit('setUser', user);
-      } catch(e) {
-        console.log(e)
-      }
-    }
-    
-    console.log(user.role)
-  }
+  var user = store.getters.getUser;
 
   if (user == null) {
     window.location.replace(process.env.VUE_APP_MAIN_URL + '/auth?redirect=int_' + to.path)
-    next();
+    next()
   }
   else if(user.role != 'admin' && user.role != 'driver') {
     window.location.replace(process.env.VUE_APP_MAIN_URL)
-    next();
+    next()
   }
   else next();
 

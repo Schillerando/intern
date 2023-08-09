@@ -1,5 +1,5 @@
 <template>
-  <EditAccountingEntryOverlay v-if="edit" :data="entry" :products="products" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry($event)"/>
+  <EditAccountingEntryOverlay v-if="edit" :data="entry" :companyData="companyData" :products="products" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry($event)"/>
 
   <div class="card" @click="edit = true">
     
@@ -36,12 +36,11 @@
 import EditAccountingEntryOverlay from "./EditAccountingEntryOverlay.vue"
 import { reactive } from 'vue';
 import { supabase } from '@/supabase';
-import { computed } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
   name: 'AccountingEntryTile',
-  props: ['data', 'products'],
+  props: ['data', 'products', 'companyData'],
   components: { EditAccountingEntryOverlay },
   emits: ['deleteEntry', 'stopEditingEntry'],
   data() {
@@ -66,12 +65,9 @@ export default {
 
     const store = useStore();
 
-    const companyData = computed(() => store.state.userCompany);
-
     return {
       entry,
       store,
-      companyData
     };
   },
   async mounted() {
@@ -85,7 +81,7 @@ export default {
 
       if (this.data.bill_picture != null) {
         const response = await supabase.storage
-          .from('bill-pictures/' + this.store.getters.getUserCompany.id)
+          .from('bill-pictures/' + this.companyData.id)
           .download(this.data.bill_picture);
         if (response.data != null) {
           this.entry.image = await response.data.text();
