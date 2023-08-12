@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import CompanyDetailView from '../views/CompanyDetailView';
+import OrderDetailView from '../views/OrderDetailView';
 import CompanyView from '../views/CompanyView';
 import ServiceView from '../views/ServiceView';
 import SettingsView from '../views/SettingsView';
@@ -51,6 +52,13 @@ const routes = [
     component: CompanyDetailView,
     meta: {
       footer: false,
+    },
+  },
+  {
+    path: '/orders/:orderid',
+    component: OrderDetailView,
+    meta: {
+      footer: false,
       locked: true,
       noAccess: true,
     },
@@ -98,6 +106,7 @@ router.beforeEach(async (to, from, next) => {
       }
       
       store.commit('setUser', newUser);
+      store.dispatch('startOrderSubscription');
     } catch(e) {
       store.commit('setUser', null);
     }

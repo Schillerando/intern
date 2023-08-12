@@ -9,7 +9,8 @@ const store = createStore({
     session: null,
     state: undefined,
     currentProduct: null,
-    currentEntry: null
+    currentEntry: null,
+    orders: []
   },
   mutations: {
     setUser(state, payload) {
@@ -24,6 +25,9 @@ const store = createStore({
     setCurrentEntry(state, payload) {
       state.currentEntry = payload;
     },
+    setOrders(state, payload) {
+      state.orders = payload;
+    },
   },
   getters: {
     getUser(state) {
@@ -37,6 +41,9 @@ const store = createStore({
     },
     getCurrentEntry(state) {
       return state.currentEntry;
+    },
+    getOrders(state) {
+      return state.orders
     },
   },
   actions: {
@@ -84,6 +91,8 @@ const store = createStore({
         commit('setUser', user)
       }
 
+      if(this.state.user != null) this.dispatch('startOrderSubscription');
+
       if(!isSafari) {
         this.timer = setInterval(() => {
           this.dispatch('getSharedLogin')
@@ -126,6 +135,54 @@ const store = createStore({
         router.go(router.currentRoute);
       } else {
         commit('setUser', null);
+      }
+    },
+    async startOrderSubscription({ commit }) {
+      try {
+
+        const { data, error } = await supabase
+          .from('orders')
+          .select()
+
+        if(error != null) throw error
+
+        commit('setOrders', data)
+
+        const orderSubscription = supabase.channel('any').on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+          },
+          async (payload) => {
+            
+            var orders = this.state.orders
+
+            var index = orders.findIndex(order => order.id == payload.new.id)
+
+            if(index != -1) orders[index] = payload.new
+            else orders.push(payload.new)
+
+            if(error != null) throw error
+
+            console.log('Database change received!', payload.new);
+            commit('setOrders', orders);
+          }
+        );
+
+        orderSubscription.subscribe();
+      } catch (error) {
+        commit('setOrders', []);
+        console.log(error.error_description || error.message);
+      }
+    },
+
+    async stopOrderSubscription() {
+      try {
+        await supabase.removeAllChannels();
+      } catch (error) {
+        console.log(error.error_description || error.message);
       }
     },
     async createCompany({ commit }, form) {
