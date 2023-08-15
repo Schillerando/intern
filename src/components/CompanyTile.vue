@@ -1,38 +1,36 @@
 <template>
-  <router-link :to="link" class="hover">
-    <div class="sizing">
-      <div class="card">
-        <div class="image">
-          <div v-if="this.picture == null" class="no-image">
-            <i class="fa-solid fa-image fa-2xl"></i>
-          </div>
-          <img v-else :src="picture" alt="" />
+  <div class="sizing">
+    <div class="card">
+      <div class="image">
+        <div v-if="this.picture == null" class="no-image">
+          <i class="fa-solid fa-image fa-2xl"></i>
         </div>
-        <div class="row">
-          <h2 class="col-9 name highlight">
-            {{ data.name }}
-          </h2>
-          <div class="col-3">
-            <CompanyBadge
-              :verified="data.verified"
-              :premium="data.abo == 'Business'"
-              :self="data.alias == 'schillerando'"
-              class="company-badge"
-            />
-          </div>
+        <img v-else :src="picture" alt="" />
+      </div>
+      <div class="row">
+        <h2 class="col-9 name highlight">
+          {{ data.name }}
+        </h2>
+        <div class="col-3">
+          <CompanyBadge
+            :verified="data.verified"
+            :premium="data.abo == 'Business'"
+            :self="data.alias == 'schillerando'"
+            class="company-badge"
+          />
         </div>
-        <div class="category highlight">
-          {{ data.categories[0] }}
-        </div>
-        <div class="row">
-          <div class="col-9 location">
-            <i class="fa-solid fa-location-dot"></i>
-            <div class="location-text">{{ data.location }}</div>
-          </div>
+      </div>
+      <div class="category highlight">
+        {{ data.categories[0] }}
+      </div>
+      <div class="row">
+        <div class="col-9 location">
+          <i class="fa-solid fa-location-dot"></i>
+          <div class="location-text">{{ data.location }}</div>
         </div>
       </div>
     </div>
-  </router-link>
+  </div>
 </template>
 
 <script>
@@ -56,11 +54,6 @@ export default {
       if (response.data != null) this.picture = await response.data.text();
       if (response.error) console.warn(response.error);
     }
-  },
-  computed: {
-    link() {
-      return `/${this.data.alias}`;
-    },
   },
 };
 </script>

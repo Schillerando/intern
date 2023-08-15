@@ -1,6 +1,8 @@
 <template>
-  <router-link :to="link" class="hover">
-    <div v-if="!loading" class="card">
+  <router-link :is="completeData == undefined ? 'router-link' : 'div'" :to="link">
+    <div v-if="!loading" class="card" :class="{ 'no_hover': completeData != undefined }">
+      <h3 v-if="completeData != undefined">Bestellübersicht</h3>
+
       <div>
         <div class="date" >
           <i class="fa-solid fa-calendar"></i>
@@ -97,7 +99,7 @@ import { reformatDate, cutSecondsFromTime, calculateDuration } from '../helpers.
 
 export default {
   name: 'OrderTile',
-  props: ['data', 'drivers'],
+  props: ['data', 'drivers', 'completeData'],
   emits: ['stopEditingOrder'],
   data() {
     return {
@@ -134,6 +136,26 @@ export default {
     };
   },
   async mounted() {
+
+    if(this.completeData != null && this.completeData != undefined) {
+      this.order = this.completeData
+
+      var now = new Date()
+      if(this.order.delivery_time != null && this.order.delivery_time != '') this.order.duration = calculateDuration(this.order.order_time, this.order.delivery_time)
+      else if(now.getDate() != this.order.day.split('.')[0]) this.order.duration = 10000
+      else {
+        var currentTime = `${now.getHours()}:${now.getMinutes()}`
+        this.order.duration = calculateDuration(this.order.order_time, currentTime)
+
+        this.timer = setInterval(() => {
+          this.order.duration++;
+        }, 60000)
+      }
+
+      this.loading = false
+      return
+    }
+
     this.order.id = this.data.id
     this.order.buyer = this.data.buyer
     this.order.buyer_name = this.data.buyer_name
@@ -149,10 +171,11 @@ export default {
     this.order.products = this.data.products
     this.order.product_count = this.order.products.length
 
+    now = new Date()
     if(this.order.delivery_time != null && this.order.delivery_time != '') this.order.duration = calculateDuration(this.order.order_time, this.order.delivery_time)
+    else if(now.getDate() != this.order.day.split('.')[0]) this.order.duration = 10000
     else {
-      var now = new Date()
-      var currentTime = `${now.getHours()}:${now.getMinutes()}`
+      currentTime = `${now.getHours()}:${now.getMinutes()}`
       this.order.duration = calculateDuration(this.order.order_time, currentTime)
 
       this.timer = setInterval(() => {
@@ -199,17 +222,11 @@ export default {
   },
   computed: {
     link() {
+      if(this.data == undefined) return ''
       return `/orders/${this.data.id}`;
     },
   },
   methods: {
-    stopEditingOrder(orderData) {
-      this.edit = false;
-
-      if(orderData == null) return;
-
-      this.$emit('stopEditingOrder', orderData)
-    },
     selectDriver() {
       var driverInput = document.getElementById('order-driver')
 
@@ -252,6 +269,10 @@ export default {
 
 .card:hover {
   color: #0d6efd;
+}
+
+.no_hover:hover {
+  color: black;
 }
 
 .fa-solid {
