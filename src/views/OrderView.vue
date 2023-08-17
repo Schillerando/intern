@@ -3,16 +3,21 @@
 
   <div v-if="drivers.length > 0 && this.newOrders.length > 0">
     <h3>Neue Bestellungen</h3>
-    <div v-for="order in this.newOrders" :key="order.id">
-      <OrderTile :data="order" :drivers="drivers"></OrderTile>
+    <div class="list">
+      <div v-for="order in this.newOrders" :key="order.id">
+        <OrderTile :data="order" :drivers="drivers"></OrderTile>
+      </div>
     </div>
   </div>
 
   <div v-if="drivers.length > 0 && this.oldOrders.length > 0">
     <h3>Alte Bestellungen</h3>
-    <div v-for="order in this.oldOrders" :key="order.id">
-      <OrderTile :data="order" :drivers="drivers"></OrderTile>
+    <div class="list">
+      <div v-for="order in this.oldOrders" :key="order.id">
+        <OrderTile :data="order" :drivers="drivers"></OrderTile>
+      </div>
     </div>
+    
   </div>
   
 </template>
@@ -77,11 +82,16 @@ export default {
 </script>
 
 <style scoped>
-  h3 {
-    margin-bottom: 20px;
-  }
+h3 {
+  margin-bottom: 20px;
+}
 
-  div {
-    margin-bottom: 40px;
-  }
+div {
+  margin-bottom: 40px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
 </style>

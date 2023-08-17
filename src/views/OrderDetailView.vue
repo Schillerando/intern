@@ -1,43 +1,12 @@
 <template>
   <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-6 col-xl-4">
       <div class="overview">
         <OrderTile :drivers="drivers" :complete-data="order"></OrderTile>
       </div>
     </div>
 
-    <div class="col-lg-6">
-      <div v-if="this.loading == false" class="companies">
-        <div class="accordion" id="companyAccordion">
-          <div v-for="stack in this.order.stacked_company_products" :key="stack.company.id" class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="'#' + stack.company.alias" aria-expanded="true" :aria-controls="stack.company.alias">
-                {{ stack.company.name }}
-              </button>
-            </h2>
-            <div :id="stack.company.alias" class="accordion-collapse collapse" data-bs-parent="#companyAccordion">
-              <div class="accordion-body">
-                <CompanyTile :data="stack.company"></CompanyTile>
-
-                <div v-for="product in stack.products" :key="product.id">
-                  <ShoppingCartTile :data="product"></ShoppingCartTile>
-                </div>
-
-                <div class="company-amount">
-                    <span :class="{ green: stack.fee == 0 }">{{ stack.amount + " $" }}</span>
-                    <span style="color: red;" v-if="stack.fee > 0">{{" - " + stack.fee + " $"}} </span>
-                    <span v-if="stack.fee > 0"> = </span>
-                    <span style="color: green;" v-if="stack.fee > 0">{{ (stack.amount-stack.fee) + " $" }}</span>
-                  </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="col-lg-6">
+    <div class="col-lg-6 col-xl-4">
       <div class="details">
         <div class="input-group mb-1">
           <span span class="input-group-text"
@@ -105,6 +74,37 @@
         </div>
 
         {{  this.order.to_pay }}
+      </div>
+
+    </div>
+
+    <div class="col-lg-6 col-xl-4">
+      <div v-if="this.loading == false" class="companies">
+        <div class="accordion" id="companyAccordion">
+          <div v-for="stack in this.order.stacked_company_products" :key="stack.company.id" class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="'#' + stack.company.alias" aria-expanded="true" :aria-controls="stack.company.alias">
+                {{ stack.company.name }}
+              </button>
+            </h2>
+            <div :id="stack.company.alias" class="accordion-collapse collapse" data-bs-parent="#companyAccordion">
+              <div class="accordion-body">
+                <CompanyTile :data="stack.company" :noLink="false"></CompanyTile>
+
+                <div v-for="product in stack.products" :key="product.id">
+                  <ShoppingCartTile :data="product"></ShoppingCartTile>
+                </div>
+
+                <div class="company-amount">
+                    <span :class="{ green: stack.fee == 0 }">{{ stack.amount + " $" }}</span>
+                    <span style="color: red;" v-if="stack.fee > 0">{{" - " + stack.fee + " $"}} </span>
+                    <span v-if="stack.fee > 0"> = </span>
+                    <span style="color: green;" v-if="stack.fee > 0">{{ (stack.amount-stack.fee) + " $" }}</span>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -346,6 +346,7 @@ export default {
 
 .companies {
   margin-top: 40px;
+  margin-bottom: 100px;
 }
 
 .accordion-body {

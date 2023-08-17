@@ -1,36 +1,38 @@
 <template>
-  <div class="sizing">
-    <div class="card">
-      <div class="image">
-        <div v-if="this.picture == null" class="no-image">
-          <i class="fa-solid fa-image fa-2xl"></i>
+  <router-link :to="link" :is="noLink ? 'span' : 'router-link'" class="hover">
+    <div class="sizing">
+      <div class="card">
+        <div class="image">
+          <div v-if="this.picture == null" class="no-image">
+            <i class="fa-solid fa-image fa-2xl"></i>
+          </div>
+          <img v-else :src="picture" alt="" />
         </div>
-        <img v-else :src="picture" alt="" />
-      </div>
-      <div class="row">
-        <h2 class="col-9 name highlight">
-          {{ data.name }}
-        </h2>
-        <div class="col-3">
-          <CompanyBadge
-            :verified="data.verified"
-            :premium="data.abo == 'Business'"
-            :self="data.alias == 'schillerando'"
-            class="company-badge"
-          />
+        <div class="row">
+          <h2 class="col-9 name highlight">
+            {{ data.name }}
+          </h2>
+          <div class="col-3">
+            <CompanyBadge
+              :verified="data.verified"
+              :premium="data.abo == 'Business'"
+              :self="data.alias == 'schillerando'"
+              class="company-badge"
+            />
+          </div>
         </div>
-      </div>
-      <div class="category highlight">
-        {{ data.categories[0] }}
-      </div>
-      <div class="row">
-        <div class="col-9 location">
-          <i class="fa-solid fa-location-dot"></i>
-          <div class="location-text">{{ data.location }}</div>
+        <div class="category highlight">
+          {{ data.categories[0] }}
+        </div>
+        <div class="row">
+          <div class="col-9 location">
+            <i class="fa-solid fa-location-dot"></i>
+            <div class="location-text">{{ data.location }}</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+</router-link>
 </template>
 
 <script>
@@ -39,7 +41,7 @@ import { supabase } from '../supabase';
 
 export default {
   name: 'CompanyTile',
-  props: ['data'],
+  props: ['data', "noLink"],
   data() {
     return {
       picture: null,
@@ -54,6 +56,11 @@ export default {
       if (response.data != null) this.picture = await response.data.text();
       if (response.error) console.warn(response.error);
     }
+  },
+  computed: {
+    link() {
+      return `/${this.data.alias}`;
+    },
   },
 };
 </script>

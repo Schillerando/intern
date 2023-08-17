@@ -62,7 +62,7 @@ export default {
   async created() {
     const { data, error } = await supabase
       .from('companies')
-      .select()
+      .select('*')
 
     if (error != null) console.log(error);
     
@@ -88,3 +88,4 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
 }
 </style>
+
