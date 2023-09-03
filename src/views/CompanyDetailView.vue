@@ -126,6 +126,23 @@
                   ></textarea>
                 </div>
 
+                <div class="status">
+                  <CompanyBadge
+                    :verified="company.abo != null && company.abo != ''"
+                    :premium="company.abo == 'Business'"
+                    :self="company.alias == 'schillerando'"
+                    class="company-badge"
+                  ></CompanyBadge>
+
+                  <p class="abo">
+                    {{ company.abo }}
+                  </p>
+                </div>
+
+                <div class="leader" v-if="company.users != null">
+                  Geschäftsführer: <span style="font-weight: bold;">{{ company.users.name }}</span> | <a :href="'mailto:' + company.users.email">{{ company.users.email }}</a>
+                </div>
+
                 <div class="form-check form-switch">
                   <input :disabled="!isCompanyEditing" @click="validateCompanyChange(false)" :checked="company.verified" class="form-check-input" type="checkbox" role="switch" id="company-verified">
                   <label class="form-check-label" for="flexSwitchCheckChecked">Verifiziert</label>
@@ -282,6 +299,7 @@ import { useStore, mapGetters } from 'vuex';
 import { computed } from 'vue';
 import { Modal } from 'bootstrap/dist/js/bootstrap.bundle.js';
 import AlertPopup from '../components/AlertPopup.vue';
+import CompanyBadge from '../components/CompanyBadge.vue';
 import AccountingView from './AccountingView.vue';
 import ProductView from './ProductView.vue';
 
@@ -292,7 +310,8 @@ export default {
   components: {
     AlertPopup,
     AccountingView,
-    ProductView
+    ProductView,
+    CompanyBadge
   },
   data() {
     return {
@@ -392,7 +411,7 @@ export default {
     if (this.$route.params.companyalias) {
       const { data, error } = await supabase
         .from('companies')
-        .select()
+        .select('*, users(*)')
         .eq('alias', this.$route.params.companyalias);
       if (error != null) console.log(error);
       if (data === null || data.length === 0) {
@@ -921,5 +940,18 @@ img {
   font-size: 6rem;
   top: 50%;
   left: calc(50% - 3rem);
+}
+
+.status {
+  display: flex;
+}
+
+.abo {
+  margin-left: 10px;
+}
+
+.leader {
+  text-align: left;
+  margin-bottom: 20px;
 }
 </style>

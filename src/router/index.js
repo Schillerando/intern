@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import CompanyDetailView from '../views/CompanyDetailView';
 import OrderDetailView from '../views/OrderDetailView';
+import UserDetailView from '../views/UserDetailView';
 import CompanyView from '../views/CompanyView';
 import ServiceView from '../views/ServiceView';
 import SettingsView from '../views/SettingsView';
@@ -57,6 +58,15 @@ const routes = [
   {
     path: '/orders/:orderid',
     component: OrderDetailView,
+    meta: {
+      footer: false,
+      locked: true,
+      noAccess: true,
+    },
+  },
+  {
+    path: '/users/:userid',
+    component: UserDetailView,
     meta: {
       footer: false,
       locked: true,
