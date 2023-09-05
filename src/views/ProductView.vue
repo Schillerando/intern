@@ -1,7 +1,7 @@
 <template>
   <EditProductOverlay v-if="newProduct" :registration="false" @stopEditingProduct="stopEditingProduct($event)" @deleteProduct="deleteProduct()"/>
 
-  <TitleDiv title="Produkte" />
+  <TitleDiv title="Angebote" />
   <button class="btn btn-primary mb-4 add-product" @click="addProduct()">
     Produkt hinzufügen
   </button>

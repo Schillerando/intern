@@ -13,7 +13,7 @@
           <p class="count">{{ companyCount }}</p>
         </div>
         <div class="card">
-          <h3>Produkte</h3>
+          <h3>Angebote</h3>
           <p class="count">{{ productCount }}</p> 
         </div>
         <div class="card">

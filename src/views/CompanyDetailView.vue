@@ -5,7 +5,7 @@
     <div class="nav" aria-label="Page navigation example">
       <ul class="pagination">
         <li class="page-item"><a class="page-link" @click="this.page = 0">Einstellungen</a></li>
-        <li class="page-item"><a class="page-link" @click="this.page = 1">Produkte</a></li>
+        <li class="page-item"><a class="page-link" @click="this.page = 1">Angebote</a></li>
         <li class="page-item"><a class="page-link" @click="this.page = 2">Buchhaltung</a></li>
       </ul>
     </div>

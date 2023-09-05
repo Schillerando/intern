@@ -111,7 +111,7 @@
     <h4 class="empty" v-if="element == 'CompanyTile'">
       Es wurden keine Unternehmen gefunden
     </h4>
-    <h4 class="empty" v-else>Es wurden keine Produkte gefunden</h4>
+    <h4 class="empty" v-else>Es wurden keine Angebote gefunden</h4>
   </div>
 </template>
 

@@ -4,7 +4,7 @@
       <div v-if="this.image == null" class="no-image">
         <i class="fa-solid fa-image fa-2xl"></i>
       </div>
-      <img v-else :src="this.image" alt="Produkt Bild" />
+      <img v-else :src="this.image" alt="Angebot Bild" />
     </div>
     <div class="info">
       <div>
