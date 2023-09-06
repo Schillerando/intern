@@ -21,6 +21,23 @@
           <p class="count">{{ orderCount }}</p>
         </div>
       </div>
+
+      <TitleDiv title="Links"></TitleDiv>
+
+      <div class="list">
+        <div class="card">
+          <h3>QR Code Main Page</h3>
+          <p class="count">{{ qrCode1 }}</p>
+        </div>  
+        <div class="card">
+          <h3>QR Code Account Page</h3>
+          <p class="count">{{ qrCode2 }}</p>
+        </div>
+        <div class="card">
+          <h3>Mail an Geschäftsführer</h3>
+          <p class="count">{{ qrCode3 }}</p> 
+        </div>
+      </div>
     </div>
     
   </div>  
@@ -44,7 +61,8 @@ export default {
       productCount: 0,
       orderCount: 0,
       qrCode1: 0,
-      qrCode2: 0
+      qrCode2: 0,
+      qrCode3: 0,
     };
   },
   async mounted() {
@@ -92,6 +110,18 @@ export default {
 
         this.orderCount = count
       }
+
+      {
+        const { data, error } = await supabase
+          .from('stats')
+          .select('*')
+
+        if(error) throw error;
+
+        this.qrCode1 = data[data.findIndex(row => row.id == 1)].count
+        this.qrCode2 = data[data.findIndex(row => row.id == 2)].count
+        this.qrCode3 = data[data.findIndex(row => row.id == 3)].count
+      }
       
       this.loading = false
     } catch (e) {
@@ -114,6 +144,7 @@ h3 {
 
 .count {
   font-size: 2rem;
+  font-weight: 400;
 }
 
 .list {
