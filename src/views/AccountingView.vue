@@ -4,13 +4,26 @@
   <div style="width: 100vw;">
     <TitleDiv title="Buchhaltung" />
 
-    <p style="margin-bottom: 20px; margin-top: -20px">
-      $ <span style="font-size: 1.3rem">&#8793;</span> Schilli (1$ = 0.1€)
+    <div class="download">
+      <p class="download-title">Herunterladen</p>
+      
+      <button class="btn btn-primary mb-4 download-button" @click="downloadCSV()">
+        CSV (EXCEL)
+      </button>
+
+      <button disabled class="btn btn-primary mb-4 download-button" @click="downloadCSV()">
+        PDF
+      </button>
+    </div>
+
+    <p style="margin-bottom: 20px;">
+      $ <span style="font-size: 1.3rem">&#8793;</span> Schilli
     </p>
 
     <button class="btn btn-primary mb-4 add-product" @click="addEntry()">
       Eintrag hinzufügen
     </button>
+
 
     <div class="row">
 
@@ -24,11 +37,12 @@
                 <div :key="key" class="profit" :class="{ revenue: profit > 0, expenses: profit < 0 }">
                   <h3>Gewinn / Verlust</h3>
                   <h1>{{ profit }} $</h1>
-                  <div class="euroProfit">{{ euroProfit }} €</div> 
+                  <div class="euroProfit">{{ euroProfit }} €</div>
 
-                  <a id="tooltip" v-if="profit > 0" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top" title="mit 20% Umtauschsteuer">
+                  <a id="tooltip" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="mit Einberechnung von Umtauschsteuer">
                     <i class="fa-regular fa-circle-question fa-lg"></i>
-                  </a>      
+                  </a>
 
                 </div>
               </div>
@@ -41,6 +55,8 @@
                 <div :key="key" class="revenue">
                   <h3>Einnahmen</h3>
                   <h1>{{ revenue }} $</h1>
+                  <div v-if="euroRevenue != 0 && schilliRevenue != 0" class="euroProfit">{{ euroRevenue }} € + {{ schilliRevenue }} $</div>
+                  <div v-else-if="euroRevenue != 0" class="euroProfit">{{ euroRevenue }} €</div>
                 </div>
               </div>
             </div>
@@ -52,6 +68,8 @@
                 <div :key="key" class="expenses">
                   <h3>Ausgaben</h3>
                   <h1>{{ expenses }} $</h1>
+                  <div v-if="euroExpenses != 0 && schilliExpenses != 0" class="euroProfit">{{ euroExpenses }} € + {{ schilliExpenses }} $</div>
+                  <div v-else-if="euroExpenses != 0" class="euroProfit">{{ euroExpenses }} €</div>
                 </div>
               </div>
             </div>
@@ -60,29 +78,25 @@
         </div>
 
       </div>
-      
-      <div class="col-lg-6">
-        
-        <div class="canvas">
-          <canvas :key="key" id="total-chart"></canvas>
 
-          <canvas :key="key" id="type-chart"></canvas>
+      <div :class="{ invisible: this.entries.length == 0 }" class="col-lg-6">
+
+        <div class="canvas">
+          <div id="total-charts"> 
+            <canvas class="total-chart"></canvas>
+          </div>
+
+          <div id="type-charts">
+            <canvas class="type-chart"></canvas>
+          </div>
         </div>
 
       </div>
-    
+
       <div class="col-lg-6">
         <div class="entries">
-          <SortableList
-            :items="entries"
-            :products="products"
-            :companyData="companyData"
-            :key="key"
-            element="AccountingEntryTile"
-            @deleteEntry="deleteEntry($event)"
-            @stopEditingEntry="stopEditingEntry($event)"
-
-          />
+          <SortableList :items="entries" :products="products" :key="key" element="AccountingEntryTile"
+            @deleteEntry="deleteEntry($event)" @stopEditingEntry="stopEditingEntry($event)" />
 
           <!--
           <div v-if="entries.length > 0">
@@ -95,13 +109,11 @@
           </div>
           -->
         </div>
-          
+
       </div>
 
     </div>
   </div>
-  
-  
 
 </template>
 
@@ -113,6 +125,7 @@ import { supabase } from '@/supabase';
 import { useStore } from 'vuex';
 // eslint-disable-next-line no-unused-vars
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js/auto'
+import { reformatDate, cutSecondsFromTime } from '@/helpers';
 
 export default {
   name: 'AccountingView',
@@ -144,7 +157,11 @@ export default {
     return {
       entries: [],
       products: [],
+      euroExpenses: 0,
+      schilliExpenses: 0,
       expenses: 0,
+      euroRevenue: 0,
+      schilliRevenue: 0,
       revenue: 0,
       profit: 0,
       euroProfit: 0,
@@ -180,6 +197,22 @@ export default {
     
   },
   methods: {
+    downloadCSV() {
+      let exportString = 'Titel;Art;Währung;Betrag;Datum;Uhrzeit;Ersteller;Beschreibung'
+      const entries = this.entries.sort((a, b) => a.created_at.localeCompare(b.created_at));
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i]
+        exportString += `\n${entry.name};${entry.type.replace('+', '').replace('-', '')};${entry.currencyIsEuro ? 'Euro' : 'Schilli'};${entry.amount};${reformatDate(entry.created_at.split('T')[0])};${cutSecondsFromTime(entry.created_at.split('T')[1])};${entry.users.name};${entry.info}`
+      }
+      let link = document.createElement("a");
+      link.textContent = "download";
+      link.download = "buchhaltung.csv";
+      link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(exportString);
+      document.body.appendChild(link);
+      link.style.display = "none";
+      link.click();
+      document.body.removeChild(link);
+    },
     deleteEntry(entryData) {
       this.newEntry = false;
 
@@ -213,6 +246,7 @@ export default {
           this.entries[index].amount = entryData.amount
           this.entries[index].info = entryData.info
           this.entries[index].bill_picture = entryData.bill_picture
+          this.entries[index].currencyIsEuro = entryData.currencyIsEuro
         }
       }
 
@@ -225,32 +259,59 @@ export default {
       this.newEntry = true;
     },
     calculateProfit() {
+      this.euroRevenue = 0
+      this.schilliRevenue = 0
       this.revenue = 0
+      this.euroExpenses = 0
+      this.schilliExpenses = 0
       this.expenses = 0
 
       this.entries.forEach(entry => {
-        if(entry.amount > 0) {
-          this.revenue += entry.amount
+        if (entry.amount > 0) {
+
+          if(entry.currencyIsEuro) this.euroRevenue += entry.amount
+          else this.schilliRevenue += entry.amount
+
         } else {
-          this.expenses += Math.abs(entry.amount)
+
+          if(entry.currencyIsEuro) this.euroExpenses += Math.abs(entry.amount)
+          else this.schilliExpenses += Math.abs(entry.amount)
+
         }
       })
 
-      this.profit = this.revenue - this.expenses;
-      this.euroProfit = this.profit > 0 ? this.profit * 0.08 : this.profit * 0.1
+      this.revenue = this.schilliRevenue + this.euroRevenue * 12.5
+      this.expenses = this.schilliExpenses + this.euroExpenses * 12.5
+
+      this.profit = (this.schilliRevenue - this.schilliExpenses) + (this.euroRevenue - this.euroExpenses) * 12.5;
+
+      this.schilliResult = this.schilliRevenue - this.schilliExpenses
+      this.euroResult = this.euroRevenue - this.euroExpenses
+      if(this.schilliResult >= 0) { this.euroProfit = this.euroResult + (this.schilliResult * 0.08); } else { this.euroProfit = this.euroResult + (this.schilliResult * 0.1); }
+
+      this.euroRevenue = this.euroRevenue.toFixed(2);
+      this.schilliRevenue = this.schilliRevenue.toFixed(0);
+
+      this.euroExpenses = this.euroExpenses.toFixed(2);
+      this.schilliExpenses = this.schilliExpenses.toFixed(0);
+
+      this.revenue = this.revenue.toFixed(0);
+      this.expenses = this.expenses.toFixed(0);
+
+      this.profit = this.profit.toFixed(0);
       this.euroProfit = this.euroProfit.toFixed(2);
 
     },
     updateGraphs() {
       this.updateTotalGraph()
       this.updateTypeGraph()
-    },  
+    },
     updateTotalGraph() {
       const revenueChart = {
         type: 'bar',
         label: 'Einnahmen',
         data: [],
-        backgroundColor:"rgba(0, 128, 0, 0.2)",
+        backgroundColor: "rgba(0, 128, 0, 0.2)",
         borderColor: "rgba(0, 128, 0, 1)",
         order: 2,
         borderSkipped: false,
@@ -261,7 +322,7 @@ export default {
         type: 'bar',
         label: 'Ausgaben',
         data: [],
-        backgroundColor:"rgba(255, 0, 0, 0.2)",
+        backgroundColor: "rgba(255, 0, 0, 0.2)",
         borderColor: "rgba(255, 0, 0, 1)",
         order: 3,
         borderSkipped: false,
@@ -272,7 +333,7 @@ export default {
         type: 'line',
         label: 'Gewinn / Verlust',
         data: [],
-        backgroundColor:"rgba(13, 110, 253, 1)",
+        backgroundColor: "rgba(13, 110, 253, 1)",
         borderColor: "rgba(13, 110, 253, 1)",
         order: 1,
       }
@@ -289,7 +350,7 @@ export default {
 
         var index;
 
-        if(labels.includes(entry.created_at.split('T')[0])) {
+        if (labels.includes(entry.created_at.split('T')[0])) {
           index = labels.indexOf(entry.created_at.split('T')[0])
 
         } else {
@@ -299,24 +360,40 @@ export default {
 
           revenueChart.data.push(0)
           expensesChart.data.push(0)
-          if(index == 0) profitChart.data.push(0)
-          else profitChart.data[index] = profitChart.data[index-1]
+          if (index == 0) profitChart.data.push(0)
+          else profitChart.data[index] = profitChart.data[index - 1]
         }
 
-        if(entry.amount > 0) {
-          revenueChart.data[index] += entry.amount;
+        var amount = entry.currencyIsEuro ? parseInt((entry.amount * 12.5).toFixed(0)) : entry.amount;
+        
+        if (amount > 0) {
+          revenueChart.data[index] += amount;
         } else {
-          expensesChart.data[index] += entry.amount;
+          expensesChart.data[index] += amount;
         }
 
-        profitChart.data[index] += entry.amount;
+        profitChart.data[index] += amount;
 
       })
 
-      if(this.totalChart != null) this.totalChart.destroy()
+      if (this.totalChart != null) {
+        this.totalChart.destroy()
+
+        const charts = document.getElementsByClassName('total-chart')
+        for(var i=0; i<charts.length; i++) {
+          charts[i].remove();
+        }
+
+        const wrapper = document.getElementById('total-charts')
+        const child = document.createElement('canvas')
+        child.classList.add('total-chart')
+        wrapper.appendChild(child)
+        child.style.marginBottom = '50px'
+      } 
       this.totalChart = null
 
-      const ctx = document.getElementById('total-chart');
+      const charts = document.getElementsByClassName('total-chart')
+      const ctx = charts[charts.length - 1];
       this.totalChart = new ChartJS(ctx, {
         data: {
           labels: labels,
@@ -332,13 +409,13 @@ export default {
               stacked: true
             },
             y: {
-              beginAtZero: false,
+              beginAtZero: true,
             }
           },
           responsive: true,
         }
       });
-      
+
     },
     updateTypeGraph() {
 
@@ -346,7 +423,7 @@ export default {
       this.entries.forEach((entry) => {
         typeEntries.push(entry)
       })
-      typeEntries.sort((a, b) => a.type[a.type.length-1].localeCompare(b.type[b.type.length-1]));
+      typeEntries.sort((a, b) => a.type[a.type.length - 1].localeCompare(b.type[b.type.length - 1]));
 
       const typeChart = {
         type: 'bar',
@@ -364,7 +441,7 @@ export default {
 
         var index;
 
-        if(labels.includes(entry.type.replace('+', '').replace('-', ''))) {
+        if (labels.includes(entry.type.replace('+', '').replace('-', ''))) {
           index = labels.indexOf(entry.type.replace('+', '').replace('-', ''))
 
         } else {
@@ -374,7 +451,7 @@ export default {
 
           typeChart.data.push(0)
 
-          if(entry.amount > 0) {
+          if (entry.amount > 0) {
             typeChart.backgroundColor.push("rgba(0, 128, 0, 0.2)")
             typeChart.borderColor.push("rgba(0, 128, 0, 1)")
           } else {
@@ -383,20 +460,36 @@ export default {
           }
         }
 
-        typeChart.data[index] += entry.amount;
+        var amount = entry.currencyIsEuro ? parseInt((entry.amount * 12.5).toFixed(0)) : entry.amount;
+
+        typeChart.data[index] += amount;
 
       })
 
 
       var sonstIndex = labels.indexOf('Sonstige Einnahme')
-      if(sonstIndex != -1) labels[sonstIndex] = 'Sonst. Einn.'
+      if (sonstIndex != -1) labels[sonstIndex] = 'Sonst. Einn.'
       sonstIndex = labels.indexOf('Sonstige Ausgabe')
-      if(sonstIndex != -1) labels[sonstIndex] = 'Sonst. Ausg.'
+      if (sonstIndex != -1) labels[sonstIndex] = 'Sonst. Ausg.'
 
-      if(this.typeChart != null) this.typeChart.destroy()
+      if (this.typeChart != null) {
+        this.typeChart.destroy()
+
+        const charts = document.getElementsByClassName('type-chart')
+        for(var i=0; i<charts.length; i++) {
+          charts[i].remove();
+        }
+
+        const wrapper = document.getElementById('type-charts')
+        const child = document.createElement('canvas')
+        child.classList.add('type-chart')
+        wrapper.appendChild(child)
+        child.style.marginBottom = '50px'
+      } 
       this.typeChart = null
 
-      const ctx = document.getElementById('type-chart');
+      const charts = document.getElementsByClassName('type-chart')
+      const ctx = charts[charts.length - 1];
       this.typeChart = new ChartJS(ctx, {
         data: {
           labels: labels,
@@ -407,7 +500,7 @@ export default {
         options: {
           scales: {
             y: {
-              beginAtZero: false,
+              beginAtZero: true,
             },
           },
           responsive: true,
@@ -419,14 +512,13 @@ export default {
         }
       });
 
-      
+
     }
   }
 };
 </script>
 
 <style scoped>
-
 h1 {
   font-weight: 600;
   font-size: 2.5rem;
@@ -501,14 +593,40 @@ h3 {
   margin-bottom: 50px;
 }
 
-#total-chart {
+.total-chart {
   width: 100%;
   margin-bottom: 50px;
 }
 
-#type-chart {
+.type-chart {
   width: 100%;
   margin-bottom: 50px;
+}
+
+.download {
+  position: relative;
+  margin: 0 auto;
+  margin-top: -20px;
+}
+
+.download-title {
+  margin: 0 5px 0 0;
+  display: inline;
+  font-size: 1.2rem;
+  position: relative;
+  bottom: 8px;
+}
+
+.download-button {
+  margin: 5px 5px;
+}
+
+.hide {
+  display: none;
+}
+
+.invisible {
+  height: 0;
 }
 
 </style>
