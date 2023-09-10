@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import CompanyDetailView from '../views/CompanyDetailView';
 import OrderDetailView from '../views/OrderDetailView';
+import OrderConfirmView from '../views/OrderConfirmView';
 import UserDetailView from '../views/UserDetailView';
 import CompanyView from '../views/CompanyView';
 import ServiceView from '../views/ServiceView';
@@ -58,6 +59,15 @@ const routes = [
   {
     path: '/orders/:orderid',
     component: OrderDetailView,
+    meta: {
+      footer: false,
+      locked: true,
+      noAccess: true,
+    },
+  },
+  {
+    path: '/orders/:orderid/confirm',
+    component: OrderConfirmView,
     meta: {
       footer: false,
       locked: true,
