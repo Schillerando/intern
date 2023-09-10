@@ -25,19 +25,14 @@
       <TitleDiv title="Links"></TitleDiv>
 
       <div class="list">
-        <div class="card">
-          <h3>QR Code Main Page</h3>
-          <p class="count">{{ qrCode1 }}</p>
-        </div>  
-        <div class="card">
-          <h3>QR Code Account Page</h3>
-          <p class="count">{{ qrCode2 }}</p>
-        </div>
-        <div class="card">
-          <h3>Mail an Geschäftsführer</h3>
-          <p class="count">{{ qrCode3 }}</p> 
+        <div v-for="link in links" :key="link.id">
+          <div class="card">
+            <h4 class="name">{{ link.name }}</h4>
+            <p class="count">{{ link.count }}</p>
+          </div>  
         </div>
       </div>
+      
     </div>
     
   </div>  
@@ -60,9 +55,7 @@ export default {
       companyCount: 0,
       productCount: 0,
       orderCount: 0,
-      qrCode1: 0,
-      qrCode2: 0,
-      qrCode3: 0,
+      links: []
     };
   },
   async mounted() {
@@ -118,9 +111,10 @@ export default {
 
         if(error) throw error;
 
-        this.qrCode1 = data[data.findIndex(row => row.id == 1)].count
-        this.qrCode2 = data[data.findIndex(row => row.id == 2)].count
-        this.qrCode3 = data[data.findIndex(row => row.id == 3)].count
+        this.links = data
+
+        this.links = this.links.filter((link) => link.id != 0)
+        this.links.sort((a, b) => a.id < b.id)
       }
       
       this.loading = false
@@ -153,5 +147,9 @@ h3 {
   margin: 0 20px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.name {
+  height: 80px;
 }
 </style>
