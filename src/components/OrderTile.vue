@@ -352,5 +352,9 @@ export default {
   border-color: #007400;
 }
 
+#order-driver {
+  max-width: 140px;
+}
+
 /*   border-radius: 0.375rem 0 0 0.375rem; */
 </style>

@@ -8,6 +8,8 @@
 
     <div class="col-lg-6 col-xl-4">
       <div class="details">
+        <h5>Zu zahlen: {{ this.order.order_price }} $</h5> 
+
         <div class="input-group mb-1">
           <span span class="input-group-text"
             ><i class="fa fa-user"></i
@@ -73,13 +75,14 @@
           ></textarea>
         </div>
 
-        {{  this.order.to_pay }}
       </div>
 
     </div>
 
     <div class="col-lg-6 col-xl-4">
       <div v-if="this.loading == false" class="companies">
+        <h5>Kosten: {{ this.order.to_pay }} $</h5> 
+
         <div class="accordion" id="companyAccordion">
           <div v-for="stack in this.order.stacked_company_products" :key="stack.company.id" class="accordion-item">
             <h2 class="accordion-header">
@@ -107,6 +110,29 @@
         </div>
       </div>
 
+      <div class="finished" v-if="this.order.delivered">
+
+        <h5>Lieferung Abgeschlossen</h5>
+
+        <div class="input-group mb-4">
+          <span class="input-group-text"
+            ><i class="fa-solid fa-circle-info"></i></span>
+          <textarea
+            type="text"
+            id="order-review"
+            class="form-control"
+            placeholder="Anmerkungen? Probleme? Feedback?"
+            required
+            maxlength="300"
+            style="resize: none"
+            rows="6"
+            cols="50"
+            disabled
+            :value="this.order.review"
+          ></textarea>
+        </div>
+
+      </div>
     </div>
     
   </div>
@@ -189,6 +215,7 @@ export default {
     this.order.deliver_to = this.orderData.deliver_to
     this.order.order_price = this.orderData.order_price
     this.order.note = this.orderData.note
+    this.order.review = this.orderData.review
     this.order.payed = this.orderData.payed
     this.order.driver = this.orderData.driver
     this.order.delivered = this.orderData.delivered
@@ -346,7 +373,7 @@ export default {
 
 .companies {
   margin-top: 40px;
-  margin-bottom: 100px;
+  margin-bottom: 50px;
 }
 
 .accordion-body {
@@ -381,6 +408,15 @@ input:disabled {
 
 textarea:disabled {
   background-color: white;
+}
+
+h5 {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.finished {
+  margin-bottom: 100px;
 }
 
 </style>
