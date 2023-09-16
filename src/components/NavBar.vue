@@ -26,6 +26,11 @@
           <router-link class="nav-link" to="/services">Services</router-link>
         </li>
         <li class="nav-item">
+          <router-link class="nav-link" to="/reviews"
+            >Rezensionen</router-link
+          >
+        </li>
+        <li class="nav-item">
           <router-link class="nav-link" to="/companies"
             >Unternehmen</router-link
           >
@@ -37,6 +42,11 @@
         </li>
         <li class="nav-item">
           <router-link class="nav-link" to="/settings">Einstellungen</router-link>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :href="mainUrl">
+            <i class="fa-solid fa-shuffle mx-1"></i>
+          </a>
         </li>
         <!--
         <li class="nav-item">
@@ -85,14 +95,17 @@ export default {
         case "services":
           links[2].style.color = '#00a100'
           break;
-        case "companies":
+        case "reviews":
           links[3].style.color = '#00a100'
           break;
-        case "users":
+        case "companies":
           links[4].style.color = '#00a100'
           break;
+        case "users":
+          links[5].style.color = '#00a100'
+          break;
         case "settings":
-          links[5].style.color = '#00a100'  
+          links[6].style.color = '#00a100'  
           break;
         default:
           break;

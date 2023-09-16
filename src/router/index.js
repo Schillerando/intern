@@ -9,6 +9,7 @@ import SettingsView from '../views/SettingsView';
 import OrderView from '../views/OrderView';
 import UserView from '../views/UserView';
 import StatsView from '../views/StatsView';
+import ReviewView from '../views/ReviewView';
 import store from '../store/index';
 import { supabase } from '../supabase';
 
@@ -29,6 +30,11 @@ const routes = [
     path: '/services',
     name: 'ServiceView',
     component: ServiceView,
+  },
+  {
+    path: '/reviews',
+    name: 'ReviewView',
+    component: ReviewView,
   },
   {
     path: '/companies',
