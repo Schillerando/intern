@@ -147,6 +147,11 @@
                   <input :disabled="!isCompanyEditing" @click="validateCompanyChange(false)" :checked="company.verified" class="form-check-input" type="checkbox" role="switch" id="company-verified">
                   <label class="form-check-label" for="flexSwitchCheckChecked">Verifiziert</label>
                 </div>
+
+                <div class="form-check form-switch">
+                  <input :disabled="!isCompanyEditing" @click="validateCompanyChange(false)" :checked="company.payed" class="form-check-input" type="checkbox" role="switch" id="company-payed">
+                  <label class="form-check-label" for="flexSwitchCheckChecked">Bezahlt ({{ toPay }} $)</label>
+                </div>
               </form>
     
               <div
@@ -410,7 +415,8 @@ export default {
       successAlertInfo: '',
       failureAlertTitle: 'Fehler',
       failureAlertInfo: 'Es ist ein Fehler aufgetreten!',
-      key: 0
+      key: 0,
+      toPay: 0
     };
   },
   computed: {
@@ -430,6 +436,7 @@ export default {
       image: null, 
       unchangedImage: null,
       verified: null,
+      payed: null,
       coordinates: []
     });
 
@@ -504,6 +511,20 @@ export default {
       }
       this.company = data[0];
       this.employees = this.company.employees
+
+      if(this.company.abo != null && this.company.abo != '') {
+        switch(this.company.abo) {
+          case 'Standard':
+            this.toPay = 50
+            break;
+          case 'Delivery':
+            this.toPay = 100
+            break;
+          case 'Business':
+            this.toPay = 160
+            break;
+        }
+      }
 
       if (this.company.header_picture != null) {
         const response = await supabase.storage
@@ -587,6 +608,7 @@ export default {
       var categoryInput = document.getElementById('company-category');
       var descriptionInput = document.getElementById('company-info');
       var verifiedInput = document.getElementById('company-verified');
+      var payedInput = document.getElementById('company-payed');
 
       if (pressed) nameInput.value = nameInput.value.trim();
       if (pressed) locationInput.value = locationInput.value.trim();
@@ -655,6 +677,7 @@ export default {
             this.form.category = categoryInput.value;
             this.form.info = descriptionInput.value;
             this.form.verified = verifiedInput.checked;
+            this.form.payed = payedInput.checked;
 
             this.failureAlertTitle = 'Name schon vergeben';
             this.failureAlertInfo =
@@ -670,6 +693,7 @@ export default {
         this.form.info = descriptionInput.value;
         this.form.category = categoryInput.value;
         this.form.verified = verifiedInput.checked;
+        this.form.payed = payedInput.checked;
 
         this.saveCompany();
       }
@@ -793,7 +817,8 @@ export default {
             categories: [this.form.category],
             location: this.form.location,
             info: this.form.info,
-            verified: this.form.verified
+            verified: this.form.verified,
+            payed: this.form.payed
           })
           .eq('id', this.company.id)
           .select();
@@ -908,11 +933,15 @@ export default {
       var locationInput = document.getElementById('company-location');
       var categoryInput = document.getElementById('company-category');
       var descriptionInput = document.getElementById('company-info');
+      var verifiedInput = document.getElementById('company-verified');
+      var payedInput = document.getElementById('company-payed');
 
       nameInput.value = this.company.name;
       locationInput.value = this.company.location;
       categoryInput.value = this.company.categories[0];
       descriptionInput.value = this.company.info;
+      verifiedInput.checked = this.company.verified;
+      payedInput.checked = this.company.payed;
 
       nameInput.classList.remove('is-valid');
       nameInput.classList.remove('is-invalid');
