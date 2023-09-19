@@ -10,7 +10,8 @@ const store = createStore({
     state: undefined,
     currentProduct: null,
     currentEntry: null,
-    orders: []
+    orders: [],
+    services: []
   },
   mutations: {
     setUser(state, payload) {
@@ -28,6 +29,9 @@ const store = createStore({
     setOrders(state, payload) {
       state.orders = payload;
     },
+    setServices(state, payload) {
+      state.services = payload;
+    },
   },
   getters: {
     getUser(state) {
@@ -44,6 +48,9 @@ const store = createStore({
     },
     getOrders(state) {
       return state.orders
+    },
+    getServices(state) {
+      return state.services
     },
   },
   actions: {
@@ -66,6 +73,7 @@ const store = createStore({
           var user = data.user
           if(this.state.user != null) user.role = this.state.user.role
           commit('setUser', user)
+          this.dispatch('startServiceSubscription')
         }
       } catch(e) {
         commit('setUser', null);
@@ -179,6 +187,65 @@ const store = createStore({
     },
 
     async stopOrderSubscription() {
+      try {
+        await supabase.removeAllChannels();
+      } catch (error) {
+        console.log(error.error_description || error.message);
+      }
+    },
+    async startServiceSubscription({ commit }) {
+      try {
+
+        const { data, error } = await supabase
+          .from('booked_services')
+          .select('*, companies(*)')
+
+        if(error != null) throw error
+
+        commit('setServices', data)
+
+        const orderSubscription = supabase.channel('any').on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'booked_services',
+          },
+          async (payload) => {
+            
+            var services = this.state.services
+
+            var newService = payload.new
+
+            const { data, error } = await supabase
+              .from('companies')
+              .select()
+              .eq('id', newService.company)
+
+            if(error != null) throw error
+
+            newService.companies = data[0]
+
+            var index = services.findIndex(service => service.id == newService.id)
+
+            if(index != -1) services[index] = newService
+            else services.push(newService)
+
+            if(error != null) throw error
+
+            console.log('Database change received!', newService);
+            commit('setOrders', services);
+          }
+        );
+
+        orderSubscription.subscribe();
+      } catch (error) {
+        commit('setServices', []);
+        console.log(error.error_description || error.message);
+      }
+    },
+
+    async stopServiceSubscription() {
       try {
         await supabase.removeAllChannels();
       } catch (error) {

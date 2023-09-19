@@ -1,12 +1,14 @@
 <template>
 
-  <div v-if="order != null && !loading">
+  <div v-if="service != null && !loading">
     <div class="row">
       <div class="col-lg-6">
         <div class="overview">
-          <OrderTile :data="this.order" :drivers="this.drivers" />
+          <ServiceTile :data="this.service" :drivers="this.drivers" />
+          <div class="company_tile">
+            <CompanyTile :data="service.companies" />
+          </div>
         </div>
-
       </div>
 
       <div class="col-lg-6">
@@ -17,11 +19,11 @@
               class="form-check-input"
               type="checkbox"
               value=""
-              id="order-check1"
-              @change="validateOrder(false)"
+              id="service-check1"
+              @change="validateService(false)"
             />
             <label class="form-check-label" for="acceptCheck">
-              Kunde hat die Lieferung entgegen genommen
+              Service wurde entgegen genommen
             </label>
           </div>
           <div class="form-check mt-2 mb-4">
@@ -29,11 +31,11 @@
               class="form-check-input"
               type="checkbox"
               value=""
-              id="order-check2"
-              @change="validateOrder(false)"
+              id="service-check2"
+              @change="validateService(false)"
             />
             <label class="form-check-label" for="acceptCheck">
-              Kunde hat den vollen Preis der Lieferung bezahlt
+              Kunde hat den vollen Preis des Services bezahlt
             </label>
           </div>
   
@@ -42,7 +44,7 @@
               ><i class="fa-solid fa-circle-info"></i></span>
             <textarea
               type="text"
-              id="order-review"
+              id="service-review"
               class="form-control"
               placeholder="Anmerkungen? Probleme? Feedback?"
               required
@@ -50,20 +52,20 @@
               style="resize: none"
               rows="6"
               cols="50"
-              :value="this.order.review"
+              :value="this.service.review"
             ></textarea>
           </div>
         </form>
         
         <button
           type="button"
-          @click="validateOrder(true)"
-          class="btn btn-primary order-button mx-3"
+          @click="validateService(true)"
+          class="btn btn-primary service-button mx-3"
         >
           <div class="loading-button">Bestätigen</div>
           <div class="spinner">
             <span
-              class="spinner-border spinner-border-sm"
+              class="spinner-bservice spinner-bservice-sm"
               role="status"
               aria-hidden="true"
             ></span>
@@ -80,17 +82,19 @@
 
 <script>
 import { supabase } from '@/supabase';
-import OrderTile from '@/components/OrderTile.vue';
+import ServiceTile from '@/components/ServiceTile.vue';
+import CompanyTile from '@/components/CompanyTile.vue';
 import { useStore } from 'vuex'
 
 export default {
-  name: 'OrderConfirmView',
+  name: 'serviceConfirmView',
   components: {
-    OrderTile
+    ServiceTile,
+    CompanyTile
   },
   data() {
     return {
-      order: null,
+      service: null,
       drivers: null,
       loading: true,
       error: 'Fehler',
@@ -109,27 +113,27 @@ export default {
     try {
       
       const { data, error } = await supabase
-        .from('orders')
-        .select()
-        .eq('id', this.$route.params.orderid)
+        .from('booked_services')
+        .select('*, companies(*)')
+        .eq('id', this.$route.params.serviceid)
 
       if(error) throw error;
 
-      if(data.length == 0) this.error = 'Lieferung nicht gefunden'
+      if(data.length == 0) this.error = 'Service nicht gefunden'
 
-      this.order = data[0]
+      this.service = data[0]
 
-      if(this.$route.query.user_id != this.order.buyer) {
+      if(this.$route.query.user_id != this.service.buyer) {
         this.error = 'Nutzerdaten falsch'
-        this.order = null;
+        this.service = null;
       }
-      else if(this.order.driver == null) {
-        this.error = 'Lieferung wird noch zugewiesen'
-        this.order = null;
+      else if(this.service.driver == null) {
+        this.error = 'Service wird noch zugewiesen'
+        this.service = null;
       }
-      else if(this.order.payed == true && this.order.delivered == true) {
-        this.error = 'Lieferung wurde schon bestätigt'
-        this.order = null;
+      else if(this.service.payed == true && this.service.finished == true) {
+        this.error = 'Service wurde schon bestätigt'
+        this.service = null;
       }
 
       {
@@ -149,13 +153,13 @@ export default {
     this.loading = false;
   },
   methods: {
-    validateOrder(pressed) {
+    validateService(pressed) {
       if(!pressed && !this.confirmPressed) return
 
       var valid = true;
 
-      var checkInput1 = document.getElementById('order-check1');
-      var checkInput2 = document.getElementById('order-check2');
+      var checkInput1 = document.getElementById('service-check1');
+      var checkInput2 = document.getElementById('service-check2');
 
       if (!checkInput1.checked) {
         checkInput1.classList.add('is-invalid');
@@ -179,11 +183,11 @@ export default {
 
       if(valid && pressed) {
         this.confirmPressed = false
-        this.confirmOrder()
+        this.confirmService()
       }
     },
-    async confirmOrder() {
-      var reviewInput = document.getElementById('order-review');
+    async confirmService() {
+      var reviewInput = document.getElementById('service-review');
 
       try {
         var today = new Date()
@@ -191,29 +195,28 @@ export default {
         var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
 
         const { error } = await supabase
-          .from('orders')
+          .from('booked_services')
           .update({
-            delivered: true,
             payed: true,
             review: reviewInput.value,
-            delivery_time: time
+            contact_time: time
           })
-          .eq('id', this.order.id)
+          .eq('id', this.service.id)
 
         if(error) throw error
 
-        if(this.order.order_price != this.order.to_pay) {
+        if(this.service.price != 0) {
           const { error } = await supabase
             .from('accounting')
             .insert({
               company_id: '9d1f8296-4360-4ca8-b19e-9b0823708ec7',
               user_id: this.store.getters.getUser.id,
-              name: 'Lieferung',
+              name: 'Service',
               type: 'Verkauf+',
-              info: this.order.id,
-              amount: this.order.order_price - this.order.to_pay
+              info: this.service.id,
+              amount: this.service.price
             })
-            .eq('id', this.order.id)
+            .eq('id', this.service.id)
 
             if(error) throw error
         }
@@ -222,7 +225,7 @@ export default {
         console.log(e)
       }
 
-      this.$router.push({ path: '/orders' })
+      this.$router.push({ path: '/services' })
     }
   }
 };
@@ -254,5 +257,9 @@ form {
 
 button {
   margin-bottom: 100px;
+}
+
+.company_tile {
+  margin: 15px;
 }
 </style>

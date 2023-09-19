@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import CompanyDetailView from '../views/CompanyDetailView';
 import OrderDetailView from '../views/OrderDetailView';
+import ServiceDetailView from '../views/ServiceDetailView';
 import OrderConfirmView from '../views/OrderConfirmView';
+import ServiceConfirmView from '../views/ServiceConfirmView';
 import UserDetailView from '../views/UserDetailView';
 import CompanyView from '../views/CompanyView';
 import ServiceView from '../views/ServiceView';
@@ -72,8 +74,26 @@ const routes = [
     },
   },
   {
+    path: '/services/:serviceid',
+    component: ServiceDetailView,
+    meta: {
+      footer: false,
+      locked: true,
+      noAccess: true,
+    },
+  },
+  {
     path: '/orders/:orderid/confirm',
     component: OrderConfirmView,
+    meta: {
+      footer: false,
+      locked: true,
+      noAccess: true,
+    },
+  },
+  {
+    path: '/services/:serviceid/confirm',
+    component: ServiceConfirmView,
     meta: {
       footer: false,
       locked: true,
@@ -133,6 +153,7 @@ router.beforeEach(async (to, from, next) => {
       
       store.commit('setUser', newUser);
       store.dispatch('startOrderSubscription');
+      this.dispatch('startServiceSubscription')
     } catch(e) {
       store.commit('setUser', null);
     }
