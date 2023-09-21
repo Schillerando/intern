@@ -153,7 +153,7 @@ router.beforeEach(async (to, from, next) => {
       
       store.commit('setUser', newUser);
       store.dispatch('startOrderSubscription');
-      this.dispatch('startServiceSubscription')
+      store.dispatch('startServiceSubscription')
     } catch(e) {
       store.commit('setUser', null);
     }
