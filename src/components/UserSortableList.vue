@@ -63,6 +63,7 @@
       </button>
     </div>
   </div>
+  <p class="count">{{ sortedShownItems.length }} Treffer</p>
   <div class="sortable-list" ref="sortableList">
     <div v-for="ssItem in sortedShownItems" v-bind:key="ssItem.id">
       <component :is="element" :data="ssItem" class="item"></component>
@@ -366,6 +367,10 @@ export default {
 
 .fa-envelope {
   margin-right: 5px;
+}
+
+.count {
+  margin-top: -25px;
 }
 
 </style>
