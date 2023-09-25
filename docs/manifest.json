@@ -1,7 +1,7 @@
 {
   "name": "Schillerando Intern",
   "short_name": "Intern",
-  "start_url": "./companies",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#fff",
   "description": "Interne Verwaltung von Schillerando.",
