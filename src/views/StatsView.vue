@@ -59,6 +59,7 @@ export default {
     };
   },
   async mounted() {
+    require.context('../assets/', false);
 
     try {
 
