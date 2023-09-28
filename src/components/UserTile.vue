@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import CompanyBadge from './CompanyBadge.vue';
+import CompanyBadge from '@/shared/components/CompanyBadge.vue';
 
 export default {
   name: 'UserTile',

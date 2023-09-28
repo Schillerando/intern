@@ -30,7 +30,7 @@
 import { supabase } from '@/supabase';
 import OrderTile from '../components/OrderTile.vue'
 import UserTile from '../components/UserTile.vue'
-import CompanyTile from '../components/CompanyTile.vue'
+import CompanyTile from '@/shared/components/CompanyTile.vue'
 
 export default {
   name: 'UserDetailView',

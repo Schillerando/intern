@@ -90,7 +90,7 @@
 import { supabase } from '@/supabase';
 import { useStore } from 'vuex';
 import { reformatDate, cutSecondsFromTime, calculateDuration } from '../helpers.js'
-import CompanyBadge from './CompanyBadge.vue';
+import CompanyBadge from '@/shared/components/CompanyBadge.vue';
 
 export default {
   name: 'ServiceTile',

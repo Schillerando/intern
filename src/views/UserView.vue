@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import TitleDiv from '@/components/TitleDiv.vue';
+import TitleDiv from '@/shared/components/TitleDiv.vue';
 import UserSortableList from '@/components/UserSortableList.vue';
 import { supabase } from '@/supabase';
 

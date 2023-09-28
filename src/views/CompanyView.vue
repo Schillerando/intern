@@ -41,8 +41,8 @@
 <script>
 import CompanySortableList from '@/components/CompanySortableList.vue';
 import { supabase } from '@/supabase';
-import TitleDiv from '../components/TitleDiv';
-import CompanyTile from '../components/CompanyTile';
+import TitleDiv from '@/shared/components/TitleDiv';
+import CompanyTile from '@/shared/components/CompanyTile';
 
 export default {
   name: 'CompanyView',

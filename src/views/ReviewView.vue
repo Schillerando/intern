@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import TitleDiv from '@/components/TitleDiv.vue';
+import TitleDiv from '@/shared/components/TitleDiv.vue';
 import { useStore } from 'vuex';
 import { supabase } from '@/supabase';
 import ReviewTile from '@/components/ReviewTile.vue';

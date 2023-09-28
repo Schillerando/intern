@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import TitleDiv from '@/components/TitleDiv.vue';
+import TitleDiv from '@/shared/components/TitleDiv.vue';
 import OrderTile from '@/components/OrderTile.vue';
 import { computed } from 'vue';
 import { useStore } from 'vuex';

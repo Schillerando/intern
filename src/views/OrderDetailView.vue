@@ -144,7 +144,7 @@ import { supabase } from '@/supabase';
 import { useStore } from 'vuex';
 import { reformatDate, cutSecondsFromTime, calculateDuration } from '../helpers.js'
 import OrderTile from '../components/OrderTile.vue'
-import CompanyTile from '../components/CompanyTile.vue'
+import CompanyTile from '@/shared/components/CompanyTile.vue'
 import ShoppingCartTile from '../components/ShoppingCartTile.vue'
 
 export default {

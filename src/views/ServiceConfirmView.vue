@@ -83,7 +83,7 @@
 <script>
 import { supabase } from '@/supabase';
 import ServiceTile from '@/components/ServiceTile.vue';
-import CompanyTile from '@/components/CompanyTile.vue';
+import CompanyTile from '@/shared/components/CompanyTile.vue';
 import { useStore } from 'vuex'
 
 export default {

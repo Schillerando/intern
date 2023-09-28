@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import TitleDiv from '@/components/TitleDiv.vue';
+import TitleDiv from '@/shared/components/TitleDiv.vue';
 
 export default {
   name: 'SettingsView',
