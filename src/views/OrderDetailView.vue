@@ -134,6 +134,14 @@
 
       </div>
     </div>
+
+    <div class="col-lg-6 col-xl-4">
+      <div v-if="this.loading == false" class="mapWrapper">
+        
+        <MapProvider :companies="order.companies" class="map" />
+
+      </div>
+    </div>
     
   </div>
 </template>
@@ -146,13 +154,15 @@ import { reformatDate, cutSecondsFromTime, calculateDuration } from '../helpers.
 import OrderTile from '../components/OrderTile.vue'
 import CompanyTile from '@/shared/components/CompanyTile.vue'
 import ShoppingCartTile from '../components/ShoppingCartTile.vue'
+import MapProvider from '../components/MapProvider.vue'
 
 export default {
   name: 'OrderDetailView',
   components: {
     OrderTile,
     CompanyTile,
-    ShoppingCartTile
+    ShoppingCartTile,
+    MapProvider
   },
   data() {
     return {
@@ -179,6 +189,7 @@ export default {
       stacked_company_products: [],
       product_count: 0,
       company_count: 0,
+      companies: [],
       order_price: 0,
       to_pay: 0,
       duration: 0,
@@ -311,6 +322,7 @@ export default {
 
           var newIndex = this.order.stacked_company_products.findIndex(stack => stack.company.id == product.company_id)
           this.order.stacked_company_products[newIndex].company = data[0]
+          this.order.companies.push(data[0])
           if(data[0].abo == 'Standard') {
             this.order.stacked_company_products[newIndex].fee = (product.price * product.count) * 0.05
 
@@ -417,6 +429,24 @@ h5 {
 
 .finished {
   margin-bottom: 100px;
+}
+
+.mapWrapper {
+  position: relative;
+  width: calc(100% - 20px);
+  padding-bottom: calc(100% - 20px);
+  margin: 0 10px 100px 10px;
+}
+
+.map {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  left: 0;
+  border-style: groove;
+  border-color: #ebebeb;
+  border-width: 1px;
 }
 
 </style>
