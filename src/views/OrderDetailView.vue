@@ -86,11 +86,11 @@
         <div class="accordion" id="companyAccordion">
           <div v-for="stack in this.order.stacked_company_products" :key="stack.company.id" class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="'#' + stack.company.alias" aria-expanded="true" :aria-controls="stack.company.alias">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="'#t' + stack.company.id" aria-expanded="true" :aria-controls="stack.company.alias">
                 {{ stack.company.name }}
               </button>
             </h2>
-            <div :id="stack.company.alias" class="accordion-collapse collapse" data-bs-parent="#companyAccordion">
+            <div :id="'t' + stack.company.id" class="accordion-collapse collapse" data-bs-parent="#companyAccordion">
               <div class="accordion-body">
                 <CompanyTile :data="stack.company" :noLink="false"></CompanyTile>
 
