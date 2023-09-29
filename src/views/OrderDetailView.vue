@@ -324,9 +324,9 @@ export default {
           this.order.stacked_company_products[newIndex].company = data[0]
           this.order.companies.push(data[0])
           if(data[0].abo == 'Standard') {
-            this.order.stacked_company_products[newIndex].fee = (product.price * product.count) * 0.05
+            this.order.stacked_company_products[newIndex].fee = Math.round((product.price * product.count) * 0.05)
 
-            this.order.to_pay += (product.price * product.count) * 0.95
+            this.order.to_pay += (product.price * product.count) - this.order.stacked_company_products[newIndex].fee
           } else {
             this.order.to_pay += (product.price * product.count)
           }
@@ -337,9 +337,9 @@ export default {
           this.order.stacked_company_products[index].amount += product.price * product.count
 
           if(this.order.stacked_company_products[index].company.abo == 'Standard') {
-            this.order.stacked_company_products[newIndex].fee += (product.price * product.count) * 0.05
+            this.order.stacked_company_products[newIndex].fee += Math.round((product.price * product.count) * 0.05)
 
-            this.order.to_pay += (product.price * product.count) * 0.95
+            this.order.to_pay += (product.price * product.count) * 0.95 - this.order.stacked_company_products[newIndex].fee
           } else {
             this.order.to_pay += (product.price * product.count)
           }
