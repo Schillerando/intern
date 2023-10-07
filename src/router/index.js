@@ -69,8 +69,6 @@ const routes = [
     component: OrderDetailView,
     meta: {
       footer: false,
-      locked: true,
-      noAccess: true,
     },
   },
   {
@@ -78,8 +76,6 @@ const routes = [
     component: ServiceDetailView,
     meta: {
       footer: false,
-      locked: true,
-      noAccess: true,
     },
   },
   {
@@ -87,8 +83,6 @@ const routes = [
     component: OrderConfirmView,
     meta: {
       footer: false,
-      locked: true,
-      noAccess: true,
     },
   },
   {
@@ -96,8 +90,6 @@ const routes = [
     component: ServiceConfirmView,
     meta: {
       footer: false,
-      locked: true,
-      noAccess: true,
     },
   },
   {
