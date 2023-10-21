@@ -509,7 +509,11 @@ export default {
         this.company = null;
         return;
       }
+
       this.company = data[0];
+
+      this.store.commit('setUserCompany', this.company);
+
       this.employees = this.company.employees
 
       if(this.company.abo != null && this.company.abo != '') {

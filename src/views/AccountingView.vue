@@ -1,5 +1,6 @@
 <template>
-  <EditAccountingEntryOverlay v-if="newEntry" :products="products" :companyData="companyData" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry()"/>
+  <EditAccountingEntryOverlay v-if="newEntry" :products="products" @stopEditingEntry="stopEditingEntry($event)"
+    @deleteEntry="deleteEntry()" />
 
   <div style="width: 100vw;">
     <TitleDiv title="Buchhaltung" />
@@ -94,7 +95,7 @@
       </div>
 
       <div class="col-lg-6">
-        <div class="entries">
+        <div v-if="!loading" class="entries">
           <SortableList :items="entries" :products="products" :key="key" element="AccountingEntryTile"
             @deleteEntry="deleteEntry($event)" @stopEditingEntry="stopEditingEntry($event)" />
 
@@ -114,7 +115,6 @@
 
     </div>
   </div>
-
 </template>
 
 <script>
@@ -122,6 +122,7 @@ import TitleDiv from '@/shared/components/TitleDiv';
 import EditAccountingEntryOverlay from '../components/EditAccountingEntryOverlay';
 import SortableList from '@/components/SortableList.vue';
 import { supabase } from '@/supabase';
+import { computed } from 'vue';
 import { useStore } from 'vuex';
 // eslint-disable-next-line no-unused-vars
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js/auto'
@@ -129,17 +130,19 @@ import { reformatDate, cutSecondsFromTime } from '@/helpers';
 
 export default {
   name: 'AccountingView',
-  props: ['companyData'],
   components: {
-    TitleDiv,   
+    TitleDiv,
     EditAccountingEntryOverlay,
-    SortableList, 
+    SortableList,
   },
   setup() {
     const store = useStore();
 
+    const companyData = computed(() => store.state.userCompany);
+
     return {
       store,
+      companyData
     }
   },
   mounted() {
@@ -150,9 +153,9 @@ export default {
     require('bootstrap');
 
     window.$('body').tooltip({
-        selector: '[data-bs-toggle="tooltip"]',
+      selector: '[data-bs-toggle="tooltip"]',
     });
-  },  
+  },
   data() {
     return {
       entries: [],
@@ -169,32 +172,61 @@ export default {
       listKey: 0,
       key: 0,
       totalChart: null,
-      typeChart: null
+      typeChart: null,
+      loading: true
     };
   },
   async created() {
     {
       const { data, error } = await supabase
-      .from('products')
-      .select()
-      .eq('company_id', this.companyData.id);
+        .from('products')
+        .select()
+        .eq('company_id', this.companyData.id);
 
       if (error) throw error;
       this.products = data.sort((a, b) => a.name.localeCompare(b.name));
+
+      for(var i = 0; i < this.products.length; i++) {
+        if(this.products[i].has_variations) {
+          const { data, error } = await supabase
+            .from('product_variations')
+            .select()
+            .eq('product', this.products[i].id)
+            .order('price')
+
+          if (error) throw error;
+
+          this.products[i].variations = data
+        }
+
+        if(this.products[i].has_extras) {
+          const { data, error } = await supabase
+            .from('product_extras')
+            .select()
+            .eq('product', this.products[i].id)
+            .order('extra_price')
+
+          if (error) throw error;
+
+          this.products[i].extras = data
+        }
+      }
     }
 
     const { data, error } = await supabase
       .from('accounting')
-      .select()
+      .select("*, users(name)")
       .eq('company_id', this.companyData.id);
 
     if (error) throw error;
 
     this.entries = data
 
+    this.loading = false
+
     this.calculateProfit()
     this.updateGraphs()
-    
+
   },
   methods: {
     downloadCSV() {
@@ -225,19 +257,19 @@ export default {
       this.updateGraphs()
 
       this.key++;
-    }, 
+    },
     stopEditingEntry(entryData) {
       this.newEntry = false;
 
-      if(entryData != null) {
+      if (entryData != null) {
         const index = this.entries.findIndex((entry) => {
           return entry.id == entryData.id
-        }) 
+        })
 
         console.log(this.entries)
         console.log(index)
 
-        if(index == -1) {
+        if (index == -1) {
           this.entries.push(entryData);
         } else {
           this.entries[index].type = entryData.type

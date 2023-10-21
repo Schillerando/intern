@@ -1,5 +1,5 @@
 <template>
-  <EditAccountingEntryOverlay v-if="edit" :data="entry" :companyData="companyData" :products="products" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry($event)"/>
+  <EditAccountingEntryOverlay v-if="edit" :data="entry" :products="products" @stopEditingEntry="stopEditingEntry($event)" @deleteEntry="deleteEntry($event)"/>
 
   <div class="card" @click="edit = true">
     
@@ -36,11 +36,12 @@
 import EditAccountingEntryOverlay from "./EditAccountingEntryOverlay.vue"
 import { reactive } from 'vue';
 import { supabase } from '@/supabase';
+import { computed } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
   name: 'AccountingEntryTile',
-  props: ['data', 'products', 'companyData'],
+  props: ['data', 'products'],
   components: { EditAccountingEntryOverlay },
   emits: ['deleteEntry', 'stopEditingEntry'],
   data() {
@@ -61,14 +62,19 @@ export default {
       imageBefore: null, 
       image: null, 
       bill_picture: '',
-      currencyIsEuro: false
+      currencyIsEuro: false,
+      extras: [],
+      variation: ''
     });
 
     const store = useStore();
 
+    const companyData = computed(() => store.state.userCompany);
+
     return {
       entry,
       store,
+      companyData
     };
   },
   async mounted() {
@@ -80,6 +86,9 @@ export default {
       this.entry.amount = this.data.amount;
       this.entry.bill_picture = this.data.bill_picture;
       this.entry.currencyIsEuro = this.data.currencyIsEuro;
+      this.entry.variation = this.data.variation;
+      this.entry.extras = this.data.extras;
+      this.entry.product = this.data.product;
 
       if(this.data.users != undefined) {
         this.entry.userName = this.data.users.name
@@ -92,7 +101,7 @@ export default {
 
       if (this.data.bill_picture != null) {
         const response = await supabase.storage
-          .from('bill-pictures/' + this.companyData.id)
+          .from('bill-pictures/' + this.store.getters.getUserCompany.id)
           .download(this.data.bill_picture);
         if (response.data != null) {
           this.entry.image = await response.data.text();

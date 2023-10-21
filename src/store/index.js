@@ -8,6 +8,7 @@ const store = createStore({
     user: null,
     session: null,
     state: undefined,
+    userCompany: null,
     currentProduct: null,
     currentEntry: null,
     orders: [],
@@ -19,6 +20,9 @@ const store = createStore({
     },
     setState(state, payload) {
       state.state = payload;
+    },
+    setUserCompany(state, payload) {
+      state.userCompany = payload;
     },
     setCurrentProduct(state, payload) {
       state.currentProduct = payload;
@@ -39,6 +43,9 @@ const store = createStore({
     },
     getState(state) {
       return state.state;
+    },
+    getUserCompany(state) {
+      return state.userCompany;
     },
     getCurrentProduct(state) {
       return state.currentProduct;
@@ -373,6 +380,106 @@ const store = createStore({
         console.log(error.error_description || error.message);
       }
     },
+    async addProduct({ commit }, product) {
+      try {
+        commit('setState', 'loading');
+
+        const { data, error } = await supabase.from('products').insert({
+          name: product.name,
+          info: product.info,
+          categories: product.categories,
+          price: product.price,
+          delivery: product.delivery,
+          public: product.public, 
+          auth_uid: this.getters.getUser.id,
+          company_id: this.getters.getUserCompany.id,
+          has_variations: product.has_variations,
+          has_extras: product.has_extras,
+        })
+        .select()
+
+        if (error) throw error;
+
+        commit('setCurrentProduct', data[0])
+
+        if (product.image != null) {
+
+          var type = product.image.substring(product.image.indexOf(':'), product.image.indexOf(';')).replace(':', '')
+          var fileName = data[0].id + '.' + type.split('/')[1]
+
+          {
+            const { error } = await supabase
+              .storage
+              .from('products-pictures')
+              .upload(fileName, product.image, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: type
+              })
+
+            if (error) throw error;
+
+          }
+
+          {
+            const { data, error } = await supabase
+              .from('products')
+              .update({ product_picture: fileName })
+              .eq('id', this.getters.getCurrentProduct.id)
+              .select()
+
+            if (error) throw error;
+
+            commit('setCurrentProduct', data[0])
+          }
+        }
+
+        if(product.has_variations) {
+
+          for(var i = 0; i < product.variations.length; i++) {
+
+            const { error } = await supabase  
+              .from('product_variations')
+              .insert({
+                name: product.variations[i].name,
+                price: product.variations[i].price,
+                product: data[0].id
+              }) 
+
+            if(error) throw error
+
+            product.variations[i].new = false
+          }
+        }
+
+        if(product.has_extras) {
+          for(i = 0; i < product.extras.length; i++) {
+            const { error } = await supabase  
+              .from('product_extras')
+              .insert({
+                name: product.extras[i].name,
+                extra_price: product.extras[i].extra_price,
+                product: data[0].id
+              }) 
+
+            if(error) throw error
+
+            product.extras[i].new = false
+          }
+        }
+
+        var newProduct = data[0]
+        newProduct.variations = product.variations
+        newProduct.extras = product.extras
+        commit('setCurrentProduct', newProduct)
+
+        commit('setState', 'success');
+      } catch (error) {
+        commit('setCurrentProduct', null)
+        commit('setState', 'failure');
+        console.log(error.error_description || error.message);
+      }
+    },
     async updateProduct({ commit }, product) {
       try {
         commit('setState', 'loading');
@@ -383,7 +490,9 @@ const store = createStore({
           categories: product.categories,
           price: product.price,
           delivery: product.delivery,
-          public: product.public
+          public: product.public,
+          has_variations: product.has_variations,
+          has_extras: product.has_extras
         })
         .eq('id', product.id)
         .select()
@@ -433,6 +542,134 @@ const store = createStore({
           }
         }
 
+        {
+          const { data, error } = await supabase
+            .from('product_variations')
+            .select()
+            .eq('product', product.id)
+            
+          if(error) throw error;
+
+          var oldVariations = data
+        }
+
+        var variationIDs = []
+        if(product.has_variations) {
+          for (var i = 0; i < product.variations.length; i++) {
+            variationIDs.push(product.variations[i].id)
+
+            if (product.variations[i].new) {
+
+              const { error } = await supabase  
+                .from('product_variations')
+                .insert({
+                  name: product.variations[i].name,
+                  price: product.variations[i].price,
+                  product: this.state.currentProduct.id
+                }) 
+
+              if(error) throw error
+
+              product.variations[i].new = false
+            } else {
+              var index = oldVariations.findIndex(variation => variation.id === product.variations[i].id)
+
+              if(index != -1 && (oldVariations[index].name != product.variations[i].name || oldVariations[index].price != product.variations[i].price)) {
+                const { error } = await supabase  
+                  .from('product_variations')
+                  .update({
+                    name: product.variations[i].name,
+                    price: product.variations[i].price,
+                  }) 
+                  .eq('id', product.variations[i].id)
+
+                if(error) throw error
+              }
+
+            }
+          }
+        }
+
+        console.log(1)
+
+        for(i = 0; i < oldVariations.length; i++) {
+          if(!variationIDs.includes(oldVariations[i].id)) {
+            const { error } = await supabase  
+              .from('product_variations')
+              .delete()
+              .eq('id', oldVariations[i].id)
+
+            if(error) throw error
+          }
+        }
+
+        console.log(2)
+        
+
+        {
+          const { data, error } = await supabase
+            .from('product_extras')
+            .select()
+            .eq('product', product.id)
+            
+          if(error) throw error;
+
+          var oldExtras = data
+        }
+
+        var extraIDs = []
+        if(product.has_extras) {
+          for (i = 0; i < product.extras.length; i++) {
+            extraIDs.push(product.extras[i].id)
+
+            if (product.extras[i].new) {
+              const { error } = await supabase  
+                .from('product_extras')
+                .insert({
+                  name: product.extras[i].name,
+                  extra_price: product.extras[i].extra_price,
+                  product: this.state.currentProduct.id
+                }) 
+
+              if(error) throw error
+
+              product.extras[i].new = false
+            } else {
+              index = oldExtras.findIndex(extra => extra.id === product.extras[i].id)
+
+              if(index != -1 && (oldExtras[index].name != product.extras[i].name || oldExtras[index].extra_price != product.extras[i].extra_price)) {
+                const { error } = await supabase  
+                  .from('product_extras')
+                  .update({
+                    name: product.extras[i].name,
+                    extra_price: product.extras[i].extra_price,
+                  }) 
+                  .eq('id', product.variations[i].id)         
+                  
+                  if(error) throw error
+
+              }
+              
+            }
+          }
+        }
+
+        for(i = 0; i < oldExtras.length; i++) {
+          if(!extraIDs.includes(oldExtras[i].id)) {
+            const { error } = await supabase  
+              .from('product_extras')
+              .delete()
+              .eq('id', oldExtras[i].id)
+
+            if(error) throw error
+          }
+        }
+
+        var newProduct = this.state.currentProduct
+        newProduct.variations = product.variations
+        newProduct.extras = product.extras
+        commit('setCurrentProduct', newProduct)
+
         commit('setState', 'success');
       } catch (error) {
         commit('setCurrentProduct', null)
@@ -468,6 +705,78 @@ const store = createStore({
         console.log(error.error_description || error.message);
       }
     },
+
+    async addEntry({ commit }, entry) {
+      try {
+        console.log(entry)
+
+        commit('setState', 'loading');
+
+        const { data, error } = await supabase.from('accounting').insert({
+          name: entry.name,
+          info: entry.info,
+          type: entry.type,
+          amount: entry.type.includes('-') ? -Math.abs(entry.amount) : Math.abs(entry.amount),
+          product: entry.product.id,
+          user_id: this.getters.getUser.id,
+          company_id: this.getters.getUserCompany.id,
+          currencyIsEuro: entry.currencyIsEuro,
+          variation: entry.variation != '' ? entry.variation : null,
+          extras: entry.extras.length > 0 ? entry.extras : null
+        })
+        .select()
+
+        if (error) throw error;
+
+        commit('setCurrentEntry', data[0])
+
+        if (entry.image != null) {
+
+          var type = entry.image.substring(entry.image.indexOf(':'), entry.image.indexOf(';')).replace(':', '')
+          var fileName = data[0].id + '.' + type.split('/')[1]
+
+          {
+            console.log(entry.image)
+
+            const { error } = await supabase
+              .storage
+              .from('bill-pictures/' + this.getters.getUserCompany.id)
+              .upload(fileName, entry.image, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: type
+              })
+
+            if (error) throw error;
+
+          }
+
+          {
+            const { data, error } = await supabase
+              .from('accounting')
+              .update({ bill_picture: fileName })
+              .eq('id', this.getters.getCurrentEntry.id)
+              .select()
+
+            if (error) throw error;
+
+            commit('setCurrentEntry', data[0])
+          }
+          
+        }
+
+        const newEntry = this.getters.getCurrentEntry
+        newEntry.userName = this.getters.getUser.user_metadata.name
+        console.log(newEntry.userName)
+        commit('setCurrentEntry', newEntry)
+
+        commit('setState', 'success');
+      } catch (error) {
+        commit('setCurrentEntry', null)
+        commit('setState', 'failure');
+        console.log(error.error_description || error.message);
+      }
+    },
     async updateEntry({ commit }, entry) {
       try {
         commit('setState', 'loading');
@@ -478,6 +787,9 @@ const store = createStore({
           type: entry.type,
           amount: entry.type.includes('-') ? -Math.abs(entry.amount) : Math.abs(entry.amount),
           product: entry.product.id,
+          currencyIsEuro: entry.currencyIsEuro,
+          variation: entry.variation != '' ? entry.variation : null,
+          extras: entry.extras.length > 0 ? entry.extras : null
         })
         .eq('id', entry.id)
         .select()
@@ -491,7 +803,7 @@ const store = createStore({
           if(entry.imageBefore != null) {
             const { error } = await supabase
               .storage
-              .from('bill-pictures/' + entry.companyData.id)
+              .from('bill-pictures/' + this.getters.getUserCompany.id)
               .remove(data[0].bill_picture)
 
             if (error) throw error;
@@ -503,7 +815,7 @@ const store = createStore({
           {
             const { error } = await supabase
               .storage
-              .from('bill-pictures/' + entry.companyData.id)
+              .from('bill-pictures/' + this.getters.getUserCompany.id)
               .upload(fileName, entry.image, {
                 cacheControl: '3600',
                 upsert: true,
@@ -543,7 +855,7 @@ const store = createStore({
           {
             const { error } = await supabase
               .storage
-              .from('bill-pictures/' + entry.companyData.id)
+              .from('bill-pictures/' + this.getters.getUserCompany.id)
               .remove(entry.bill_picture)
 
             if (error) throw error;
