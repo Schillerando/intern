@@ -2,7 +2,7 @@
   <div class="card">
     <div class="header" @click="toProduct()">
       <div>
-        <h6 v-if="data.anonym || data.users == null">Anonym</h6>
+        <h6 v-if="data.anonym || data.users == null">Anonym ({{ data.users.name }})</h6>
         <h6 v-else>{{ data.users.name }}</h6>
       </div>
 
