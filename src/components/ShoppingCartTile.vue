@@ -19,18 +19,51 @@
 
         <p class="price">{{ data.price }} $</p>
 
-        <div>
+        <div v-if="editable == true" class="input-group input-group-sm count">
+          <button
+            v-if="count == 1"
+            @click="countDown(true)"
+            class="input-group-text"
+          >
+            <i color="red" class="fa-solid fa-trash-can"></i>
+          </button>
+          <button v-else @click="countDown" class="input-group-text">-</button>
+          <input
+            disabled
+            id="countInput"
+            style="background-color: white"
+            :value="count"
+            type="number"
+            class="form-control"
+            aria-label="Anzahl an Produkten"
+            min="1"
+            max="9"
+          />
+          <button v-if="count == 9" class="input-group-text">
+            &nbsp;&nbsp;&nbsp;
+          </button>
+          <button
+            v-else
+            :disabled="count >= 9"
+            @click="countUp"
+            class="input-group-text"
+          >
+            +
+          </button>
+        </div>
+
+        <div v-else>
           <p class="checkout-count">{{ count }}x</p>
         </div>
       </div>
     </div>
 
-    <div class="main" v-if="data.has_variations">
-      <div class="left">
+    <div class="main row" v-if="data.has_variations">
+      <div class="left col col-4">
         <p class="title">Variation</p>
       </div>
 
-      <div class="right">
+      <div class="right col">
         <p class="variation">
           {{
             this.data.variations.find(
@@ -42,14 +75,14 @@
     </div>
 
     <div
-      class="main"
+      class="main row"
       v-if="data.picked_extras != undefined && data.picked_extras.length > 0"
     >
-      <div class="left">
+      <div class="left col col-4">
         <p class="title">Extras</p>
       </div>
 
-      <div class="right">
+      <div class="right col col-8">
         <p class="variation">
           <span v-for="extra in extras" :key="extra.id"
             >{{ extra.name
@@ -69,7 +102,7 @@ import { supabase } from '../supabase';
 
 export default {
   name: 'ShoppingCartTile',
-  props: ['data'],
+  props: ['data', 'editable'],
   setup() {
     const store = useStore();
 
@@ -190,20 +223,18 @@ export default {
 
 .left {
   width: 40%;
-  height: 100%;
-  position: relative;
   padding: 5px 15px;
   border-right: 1px solid;
   border-top: 1px solid;
   border-color: #cfd4da;
-  float: left;
 }
 
 .right {
-  width: 100%;
-  height: 100%;
+  width: 60%;
   border-top: 1px solid;
   border-color: #cfd4da;
+  margin: 0;
+  padding: 0;
 }
 
 .image {
@@ -278,8 +309,6 @@ input[type='number'] {
 }
 
 .variation {
-  position: relative;
-  left: 15px;
   margin: 5px 15px;
   padding: 0;
   text-align: left;
