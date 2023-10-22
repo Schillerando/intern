@@ -54,10 +54,12 @@ export default {
 
       {
         const { data, error } = await supabase
-        .from('companies')
-        .select()
+          .from('companies')
+          .select()
 
         if(error) throw error;
+
+        console.log(data)
 
         data.forEach(company => {
           var index = this.users.findIndex(user => user.id == company.user_uid)
@@ -67,13 +69,15 @@ export default {
             this.users[index].isCompanyLeader = true
           }
 
-          company.employees.forEach(employee => {
-            var index = this.users.findIndex(user => user.email == employee)
+          if(company.employees != null) {
+            company.employees.forEach(employee => {
+              var index = this.users.findIndex(user => user.email == employee)
 
-            if(index != -1) {
-              this.users[index].company = company
+              if(index != -1) {
+                this.users[index].company = company
+              }
+            })
             }
-          })
           
         })
       }
