@@ -168,8 +168,12 @@ export default {
     this.order.day = reformatDate(this.data.day)
     this.order.order_time = cutSecondsFromTime(this.data.order_time)
     this.order.delivery_time = cutSecondsFromTime(this.data.delivery_time)
-    this.order.products = this.data.products
-    this.order.product_count = this.order.products.length
+    this.order.order_products = this.data.order_products
+    this.order.product_count = 0
+
+    this.data.order_products.forEach((p) => {
+      this.order.product_count += p.count;
+    });
 
     now = new Date()
     if(this.order.delivery_time != null && this.order.delivery_time != '') this.order.duration = calculateDuration(this.order.order_time, this.order.delivery_time)
@@ -190,8 +194,8 @@ export default {
     }
 
     const productIds = []
-    this.order.products.forEach((productId) => {      
-      if(!productIds.includes(productId)) productIds.push(productId)
+    this.order.order_products.forEach((product) => {      
+      if(!productIds.includes(product.product)) productIds.push(product.product)
     })
 
     try {

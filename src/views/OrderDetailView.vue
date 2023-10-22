@@ -152,7 +152,7 @@ import { supabase } from '@/supabase';
 import { useStore } from 'vuex';
 import { reformatDate, cutSecondsFromTime, calculateDuration } from '../helpers.js'
 import OrderTile from '../components/OrderTile.vue'
-import CompanyTile from '@/shared/components/CompanyTile.vue'
+import CompanyTile from '../components/CompanyTile.vue'
 import ShoppingCartTile from '../components/ShoppingCartTile.vue'
 import MapProvider from '../components/MapProvider.vue'
 
@@ -233,8 +233,12 @@ export default {
     this.order.day = reformatDate(this.orderData.day)
     this.order.order_time = cutSecondsFromTime(this.orderData.order_time)
     this.order.delivery_time = cutSecondsFromTime(this.orderData.delivery_time)
-    this.order.products = this.orderData.products
-    this.order.product_count = this.order.products.length
+    this.order.order_products = this.orderData.order_products
+    this.order.product_count = 0
+
+    this.orderData.order_products.forEach((p) => {
+      this.order.product_count += p.count;
+    });
 
     try {
       
@@ -279,76 +283,155 @@ export default {
       this.order.driver_name =  this.drivers[index].name
     }
 
-    const stackedProductIds = []
-    this.order.products.forEach((productId) => { 
-      var index = stackedProductIds.findIndex(product => product.id == productId)
-      
-      if(index == -1) stackedProductIds.push({ id: productId, count: 1 })
-      else stackedProductIds[index].count++
-    })
+    console.log(this.order)
 
     var count = 0
+    var productIds = []
+    var variationIds = []
+    var extraIds = []
     try {
-      stackedProductIds.forEach(async (p) => {
+      this.order.order_products.forEach(async (p) => {
+        if(!productIds.includes(p.product)) productIds.push(p.product)
+        if(p.variation != null && !variationIds.includes(p.variation)) variationIds.push(p.variation)
+
+        if(p.extras != null)
+          p.extras.forEach(extra => {
+            if(!extraIds.includes(extra)) extraIds.push(extra)
+          })
+      })
+
+      var fullProducts = []
+      var variations = []
+      var extras = []
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, companies(*)')
+        .filter('id', 'in', '(' + productIds + ')')
+
+      if(error) throw error
+
+      fullProducts = data
+
+      {
+        const { data, error } = await supabase
+          .from('product_variations')
+          .select()
+          .filter('id', 'in', '(' + variationIds + ')')
+
+        if(error) throw error
+
+        variations = data
+      }
+      
+      {
+        const { data, error } = await supabase
+          .from('product_extras')
+          .select()
+          .filter('id', 'in', '(' + extraIds + ')')
+
+        if(error) throw error
+
+        extras = data
+      }
+
+      for(var i = 0; i < fullProducts.length; i++) {
+        fullProducts[i].variations = variations
+        fullProducts[i].extras = extras
+      }
+
+      /*
+      productIds.forEach(async (p) => {
         const { data, error } = await supabase
           .from('products')
           .select()
-          .eq('id', p.id)
+          .eq('id', p)
 
         if(error != null) throw error
 
         var product = data[0]
-        product.count = p.count
 
-        var index = this.order.stacked_company_products.findIndex(stack => stack.company.id == product.company_id)
+        if(product.has_variations) {
+          const { data, error } = await supabase
+            .from('product_variations')
+            .select()
+            .eq('product', p)
+
+          if(error != null) throw error
+
+          product.variations = data
+        }
+
+        if(product.has_extras) {
+          const { data, error } = await supabase
+            .from('product_extras')
+            .select()
+            .eq('product', p)
+
+          if(error != null) throw error
+
+          product.extras = data
+        }
+
+        fullProducts.push(product)
+      })
+
+      */
+
+
+      this.order.order_products.forEach((orderProduct) => {
+        var fullProduct = fullProducts.find(p => p.id == orderProduct.product)
+
+        fullProduct.count = orderProduct.count
+        fullProduct.variation = orderProduct.variation
+        fullProduct.picked_extras = orderProduct.extras
+        fullProduct.price = orderProduct.price
+
+        var index = this.order.stacked_company_products.findIndex(stack => stack.company.id == fullProduct.company_id)
         if(index == -1) {
           this.order.company_count++
 
+          var company = fullProduct.companies
+
           this.order.stacked_company_products.push({
-            company: {
-              id: product.company_id
-            },
-            products: [product],
-            amount: product.price * product.count,
+            company: company,
+            products: [fullProduct],
+            amount: fullProduct.price * fullProduct.count,
             fee: 0
           })
 
-          const { data, error } = await supabase
-            .from('companies')
-            .select()
-            .eq('id', product.company_id)
+          var newIndex = this.order.stacked_company_products.findIndex(stack => stack.company.id == fullProduct.company_id)
+          this.order.companies.push(company)
+          if(company.abo == 'Standard') {
+            this.order.stacked_company_products[newIndex].fee = Math.round((fullProduct.price * fullProduct.count) * 0.05)
 
-          if(error) throw error
-
-          var newIndex = this.order.stacked_company_products.findIndex(stack => stack.company.id == product.company_id)
-          this.order.stacked_company_products[newIndex].company = data[0]
-          this.order.companies.push(data[0])
-          if(data[0].abo == 'Standard') {
-            this.order.stacked_company_products[newIndex].fee = Math.round((product.price * product.count) * 0.05)
-
-            this.order.to_pay += (product.price * product.count) - this.order.stacked_company_products[newIndex].fee
+            this.order.to_pay += (fullProduct.price * fullProduct.count) - this.order.stacked_company_products[newIndex].fee
           } else {
-            this.order.to_pay += (product.price * product.count)
+            this.order.to_pay += (fullProduct.price * fullProduct.count)
           }
 
-          count += product.count
+          count += fullProduct.count
         } else {
-          this.order.stacked_company_products[index].products.push(product)
-          this.order.stacked_company_products[index].amount += product.price * product.count
+          this.order.stacked_company_products[index].products.push(fullProduct)
+          this.order.stacked_company_products[index].amount += fullProduct.price * fullProduct.count
 
           if(this.order.stacked_company_products[index].company.abo == 'Standard') {
-            this.order.stacked_company_products[newIndex].fee += Math.round((product.price * product.count) * 0.05)
+            this.order.stacked_company_products[newIndex].fee += Math.round((fullProduct.price * fullProduct.count) * 0.05)
 
-            this.order.to_pay += (product.price * product.count) * 0.95 - this.order.stacked_company_products[newIndex].fee
+            this.order.to_pay += (fullProduct.price * fullProduct.count) * 0.95 - this.order.stacked_company_products[newIndex].fee
           } else {
-            this.order.to_pay += (product.price * product.count)
+            this.order.to_pay += (fullProduct.price * fullProduct.count)
           }
           
-          count += product.count
+          count += fullProduct.count
         }
 
-        if(count == this.order.product_count) this.loading = false
       })
+
+      this.loading = false
+      console.log(count)
+
+      console.log(this.order.stacked_company_products)
 
     } catch(e) {
       console.log(e)

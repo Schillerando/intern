@@ -1,16 +1,16 @@
 {
-  "name": "Schillerando Intern",
-  "short_name": "Intern",
-  "start_url": "./stats",
-  "display": "standalone",
-  "background_color": "#fff",
-  "description": "Interne Verwaltung von Schillerando.",
-  "icons": [
-    {
-      "src": "./img/logo_blue.bbabc485.png",
-      "sizes": "any",
-      "purpose": "maskable any",
-      "type": "image/png"
-    }
-  ]
-}
+    "name": "Schillerando Intern",
+    "short_name": "Intern",
+    "start_url": "./stats",
+    "display": "standalone",
+    "background_color": "#fff",
+    "description": "Interne Verwaltung von Schillerando.",
+    "icons": [
+      {
+        "src": "./img/logo_blue.bbabc485.png",
+        "sizes": "any",
+        "purpose": "maskable any",
+        "type": "image/png"
+      }
+    ]
+  }

@@ -161,7 +161,26 @@ const store = createStore({
 
         if(error != null) throw error
 
-        commit('setOrders', data)
+        var orders = data
+
+        {
+          const { data, error } = await supabase
+            .from('order_products')
+            .select()
+            .eq('buyer', this.state.user.id);
+
+          if (error) throw error;
+
+          data.forEach((product) => {
+            var index = orders.findIndex((o) => o.id == product.order);
+
+            if (orders[index].order_products == undefined)
+              orders[index].order_products = [];
+            orders[index].order_products.push(product);
+          });
+        }
+
+        commit('setOrders', orders);
 
         const orderSubscription = supabase.channel('any').on(
           'postgres_changes',
@@ -176,7 +195,13 @@ const store = createStore({
 
             var index = orders.findIndex(order => order.id == payload.new.id)
 
-            if(index != -1) orders[index] = payload.new
+            if (index != -1) {
+              var newOrder = payload.new;
+
+              newOrder.order_products = orders[index].order_products;
+
+              orders[index] = newOrder;
+            }
             else orders.push(payload.new)
 
             if(error != null) throw error

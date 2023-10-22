@@ -1,23 +1,63 @@
 <template>
-  <div v-if="this.data != null" class="card">
-    <div class="image">
-      <div v-if="this.image == null" class="no-image">
-        <i class="fa-solid fa-image fa-2xl"></i>
+  <div v-if="this.data != null && this.data != undefined" class="card">
+    <div class="main">
+      <div class="image">
+        <div v-if="this.image == null" class="no-image">
+          <i class="fa-solid fa-image fa-2xl"></i>
+        </div>
+        <img v-else :src="this.image" alt="Produkt Bild" />
       </div>
-      <img v-else :src="this.image" alt="Angebot Bild" />
+      <div class="info">
+        <div>
+          <p class="name">{{ data.name }}</p>
+        </div>
+        <div>
+          <p v-if="data.company != undefined" class="company_name">
+            {{ data.company.name }}
+          </p>
+        </div>
+
+        <p class="price">{{ data.price }} $</p>
+
+        <div>
+          <p class="checkout-count">{{ count }}x</p>
+        </div>
+      </div>
     </div>
-    <div class="info">
-      <div>
-        <p class="name">{{ data.name }}</p>
-      </div>
-      <div>
-        <p class="company_name">{{ data.categories[0] }}</p>
+
+    <div class="main" v-if="data.has_variations">
+      <div class="left">
+        <p class="title">Variation</p>
       </div>
 
-      <p class="price">{{ data.price }} $</p>
+      <div class="right">
+        <p class="variation">
+          {{
+            this.data.variations.find(
+              (variation) => variation.id == data.variation
+            ).name
+          }}
+        </p>
+      </div>
+    </div>
 
-      <div>
-        <p class="checkout-count">{{ count }}x</p>
+    <div
+      class="main"
+      v-if="data.picked_extras != undefined && data.picked_extras.length > 0"
+    >
+      <div class="left">
+        <p class="title">Extras</p>
+      </div>
+
+      <div class="right">
+        <p class="variation">
+          <span v-for="extra in extras" :key="extra.id"
+            >{{ extra.name
+            }}<span v-if="extras.indexOf(extra) != extras.length - 1"
+              >,
+            </span></span
+          >
+        </p>
       </div>
     </div>
   </div>
@@ -40,11 +80,25 @@ export default {
   data() {
     return {
       image: null,
-      count: null
+      count: null,
+      extras: [],
     };
   },
   async mounted() {
-    this.count = this.data.count
+    this.count = this.data.count;
+
+    console.log(this.data);
+
+    if (
+      this.data.picked_extras != undefined &&
+      this.data.picked_extras != null
+    ) {
+      this.data.picked_extras.forEach((extra) => {
+        this.extras.push(this.data.extras.find((e) => e.id == extra));
+      });
+
+      this.extras.sort((a, b) => a.name.localeCompare(b.name));
+    }
 
     if (this.data.product_picture != null) {
       const response = await supabase.storage
@@ -53,7 +107,6 @@ export default {
       if (response.data != null) this.image = await response.data.text();
       if (response.error) console.warn(response.error);
     }
-
   },
 };
 </script>
@@ -100,6 +153,8 @@ export default {
   bottom: 8px;
   left: 15px;
   color: black;
+  background-color: white;
+  width: 100%;
 }
 
 .row {
@@ -123,9 +178,32 @@ export default {
 }
 
 .card {
-  flex-direction: row;
   overflow: hidden;
   margin: 2.5%;
+}
+
+.main {
+  position: relative;
+  text-align: left;
+  height: fit-content;
+}
+
+.left {
+  width: 40%;
+  height: 100%;
+  position: relative;
+  padding: 5px 15px;
+  border-right: 1px solid;
+  border-top: 1px solid;
+  border-color: #cfd4da;
+  float: left;
+}
+
+.right {
+  width: 100%;
+  height: 100%;
+  border-top: 1px solid;
+  border-color: #cfd4da;
 }
 
 .image {
@@ -187,10 +265,25 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type='number'] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
 
 /*   border-radius: 0.375rem 0 0 0.375rem; */
+
+.title {
+  padding: 0;
+  margin: 0;
+}
+
+.variation {
+  position: relative;
+  left: 15px;
+  margin: 5px 15px;
+  padding: 0;
+  text-align: left;
+  word-wrap: break-word;
+  height: fit-content;
+}
 </style>
