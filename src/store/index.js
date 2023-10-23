@@ -162,21 +162,28 @@ const store = createStore({
         if(error != null) throw error
 
         var orders = data
+        
+        console.log(orders)
 
         {
           const { data, error } = await supabase
             .from('order_products')
             .select()
-            .eq('buyer', this.state.user.id);
 
           if (error) throw error;
 
+          console.log(data)
+
           data.forEach((product) => {
             var index = orders.findIndex((o) => o.id == product.order);
+            console.log(product)
 
-            if (orders[index].order_products == undefined)
-              orders[index].order_products = [];
-            orders[index].order_products.push(product);
+            if(index != -1) {
+              if (orders[index].order_products == undefined) orders[index].order_products = [];
+              orders[index].order_products.push(product);
+            }
+            
+            
           });
         }
 

@@ -236,9 +236,12 @@ export default {
     this.order.order_products = this.orderData.order_products
     this.order.product_count = 0
 
-    this.orderData.order_products.forEach((p) => {
-      this.order.product_count += p.count;
-    });
+    if(this.orderData.order_products != undefined) {
+      this.orderData.order_products.forEach((p) => {
+        this.order.product_count += p.count;
+      });
+    }
+    
 
     try {
       
@@ -289,16 +292,20 @@ export default {
     var productIds = []
     var variationIds = []
     var extraIds = []
-    try {
-      this.order.order_products.forEach(async (p) => {
-        if(!productIds.includes(p.product)) productIds.push(p.product)
-        if(p.variation != null && !variationIds.includes(p.variation)) variationIds.push(p.variation)
 
-        if(p.extras != null)
-          p.extras.forEach(extra => {
-            if(!extraIds.includes(extra)) extraIds.push(extra)
-          })
-      })
+    try {
+      if(this.order.order_products != undefined) {
+        this.order.order_products.forEach(async (p) => {
+          if(!productIds.includes(p.product)) productIds.push(p.product)
+          if(p.variation != null && !variationIds.includes(p.variation)) variationIds.push(p.variation)
+
+          if(p.extras != null && p.extras != undefined)
+            p.extras.forEach(extra => {
+              if(!extraIds.includes(extra)) extraIds.push(extra)
+            })
+        })
+      }
+      
 
       var fullProducts = []
       var variations = []
@@ -378,8 +385,8 @@ export default {
 
       */
 
-
-      this.order.order_products.forEach((orderProduct) => {
+      if(this.order.order_products != undefined) {
+        this.order.order_products.forEach((orderProduct) => {
         var fullProduct = fullProducts.find(p => p.id == orderProduct.product)
 
         fullProduct.count = orderProduct.count
@@ -427,6 +434,8 @@ export default {
         }
 
       })
+      }
+      
 
       this.loading = false
       console.log(count)
