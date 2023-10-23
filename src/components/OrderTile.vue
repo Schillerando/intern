@@ -171,9 +171,12 @@ export default {
     this.order.order_products = this.data.order_products
     this.order.product_count = 0
 
-    this.data.order_products.forEach((p) => {
-      this.order.product_count += p.count;
-    });
+    if(this.data.order_products != undefined) {
+      this.data.order_products.forEach((p) => {
+        this.order.product_count += p.count;
+      });
+    }
+    
 
     now = new Date()
     if(this.order.delivery_time != null && this.order.delivery_time != '') this.order.duration = calculateDuration(this.order.order_time, this.order.delivery_time)
@@ -194,9 +197,13 @@ export default {
     }
 
     const productIds = []
-    this.order.order_products.forEach((product) => {      
+
+    if(this.order.order_products != undefined) {
+      this.order.order_products.forEach((product) => {      
       if(!productIds.includes(product.product)) productIds.push(product.product)
     })
+    }
+    
 
     try {
 
@@ -210,9 +217,12 @@ export default {
 
         if(error != null) throw error
 
-        data.forEach(company => {
+        if(data != undefined) {
+          data.forEach(company => {
           if(!companyIds.includes(company.company_id)) companyIds.push(company.company_id)
         })
+        }
+        
 
       }
 
