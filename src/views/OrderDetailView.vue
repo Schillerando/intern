@@ -423,9 +423,9 @@ export default {
           this.order.stacked_company_products[index].amount += fullProduct.price * fullProduct.count
 
           if(this.order.stacked_company_products[index].company.abo == 'Standard') {
-            this.order.stacked_company_products[newIndex].fee += Math.round((fullProduct.price * fullProduct.count) * 0.05)
+            this.order.stacked_company_products[index].fee += Math.round((fullProduct.price * fullProduct.count) * 0.05)
 
-            this.order.to_pay += (fullProduct.price * fullProduct.count) * 0.95 - this.order.stacked_company_products[newIndex].fee
+            this.order.to_pay += (fullProduct.price * fullProduct.count) * 0.95 - this.order.stacked_company_products[index].fee
           } else {
             this.order.to_pay += (fullProduct.price * fullProduct.count)
           }
